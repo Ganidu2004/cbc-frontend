@@ -4,6 +4,7 @@ import ProductCard from './components/productCard'
 import Testing from './components/testing'
 import LoginPage from './pages/logingPage'
 import HomePage from './pages/homePage'
+import SignupPage from'./pages/singinPage'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 
 
@@ -16,6 +17,7 @@ function App() {
           <Routes path="/*">
             <Route path="/" element={<HomePage/>}/>
             <Route path="/login" element={<LoginPage/>}/>
+            <Route path="/singin" element={<SignupPage/>}/>
             <Route path="/*" element={<h1>404 Error</h1>}/>
           </Routes>
         </BrowserRouter>
