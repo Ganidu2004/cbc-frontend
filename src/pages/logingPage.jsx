@@ -1,32 +1,51 @@
+import axios from "axios";
+import { useState } from "react";
+
 export default function LoginPage() {
+  const [email,setEmail] = useState("Your email")
+  const [password,setPassword] = useState()
+  function login(){
+    axios.post("http://localhost:5000/api/users/login",{
+      email : email,
+      password : password
+    }).then(
+      (res)=>{
+        if(res.data.user == null){
+          toast.error(res.data.message)
+          return
+        }
+
+        localStorage.setItem("token",res.data.token)
+
+        if(res.data.user.type == "admin"){
+          window.location.href = "/admin"
+        }else{
+          window.location.href = "/"
+        }
+      }
+    )
+  }
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-400 to-teal-400 p-4">
-      <div className="bg-white rounded-2xl shadow-lg p-10 max-w-sm w-full">
-        <h1 className="text-3xl font-bold text-center text-gray-800 mb-6">Login</h1>
+    <div className="w-full h-screen bg-red-400 flex justify-center items-center">
+      <div className="flex justify-center items-center flex-col w-[450px] h-[450px] bg-blue-400">
+        <img src="/logo.jpg" className="rounded-full w-[100px] h-[100px]"/>
+        <span>Email</span>
 
-        <div className="space-y-4">
-          <input
-            type="text"
-            placeholder="Username"
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-          />
-        </div>
 
-        <button className="w-full mt-6 bg-blue-500 text-white py-3 rounded-lg font-semibold hover:bg-blue-600 transition">
-          Login
-        </button>
+        <input className="bg-white" defaultValue={email} onChange={
+            (e)=>{
+              setEmail(e.target.value)
+            }
+          }/>
+        <span>Password</span>
+        <input type="password" className="bg-white" defaultValue={password} onChange={
+          (e)=>{
+            setPassword(e.target.value)
+          }
+        }/>
 
-        <p className="text-center text-gray-500 text-sm mt-4">
-          Don't have an account?{" "}
-          <a href="#" className="text-blue-500 hover:underline">
-            Sign up
-          </a>
-        </p>
+
+        <button onClick={login} className="bg-white">Login</button>
       </div>
     </div>
   );
