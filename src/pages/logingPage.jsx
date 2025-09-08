@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useState } from "react";
+import toast from "react-hot-toast";
 
 export default function LoginPage() {
   const [email,setEmail] = useState("Your email")
@@ -14,6 +15,8 @@ export default function LoginPage() {
           toast.error(res.data.message)
           return
         }
+
+        toast.success("Login Success")
 
         localStorage.setItem("token",res.data.token)
 
