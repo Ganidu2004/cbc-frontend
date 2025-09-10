@@ -1,0 +1,159 @@
+import axios from "axios";
+import { useState } from "react"
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
+
+export default function AddProductForm() {
+  const [productId, setProductId] = useState("");
+  const [productName, setProductName] = useState("");
+  const [alternativeNames, setAlternativeNames] = useState("");
+  const [imageUrls, setImageUrls] = useState("");
+  const [price, setPrice] = useState("");
+  const [lastPrice, setLastPrice] = useState("");
+  const [stock, setStock] = useState("");
+  const [description, setDescription] = useState("");
+
+  const navigate = useNavigate()
+
+  async function handelSubmit(){
+    const altNames = alternativeNames.split(",");
+    const imgUrls = imageUrls.split(",")
+
+    const product = {
+        productId : productId,
+        productName : productName,
+        altName : altNames,
+        images : imgUrls,
+        price : price,
+        lastPrice : lastPrice,
+        stock : stock,
+        description : description
+    }
+
+    const token = localStorage.getItem("token")
+
+    try{
+        await axios.post("http://localhost:5000/api/product", product, {
+            headers: {
+                Authorization : "Bearer " + token
+            }
+        })
+        navigate("/admin/products")
+        toast.success("Product Added Successfully")
+    }catch(err){
+        toast.error("Failed to add product")
+    }
+    
+  }
+
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-start bg-gray-100 p-4">
+      <h1 className="text-3xl font-bold mb-6 text-center">Add Product</h1>
+
+      <div className="w-full max-w-md bg-white rounded-xl shadow-md p-6 flex flex-col gap-4 overflow-y-auto max-h-[90vh]">
+        {/* Product ID */}
+        <div className="flex flex-col">
+          <label className="font-medium mb-1">Product ID</label>
+          <input
+            type="text"
+            placeholder="Enter product ID (e.g., P1001)"
+            className="border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            value={productId}
+            onChange={(e) => setProductId(e.target.value)}
+          />
+        </div>
+
+        {/* Product Name */}
+        <div className="flex flex-col">
+          <label className="font-medium mb-1">Product Name</label>
+          <input
+            type="text"
+            placeholder="Enter product name"
+            className="border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            value={productName}
+            onChange={(e) => setProductName(e.target.value)}
+          />
+        </div>
+
+        {/* Alternative Names */}
+        <div className="flex flex-col">
+          <label className="font-medium mb-1">Alternative Names</label>
+          <input
+            type="text"
+            placeholder="Enter alternative names (comma separated)"
+            className="border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            value={alternativeNames}
+            onChange={(e) => setAlternativeNames(e.target.value)}
+          />
+        </div>
+
+        {/* Image URLs */}
+        <div className="flex flex-col">
+          <label className="font-medium mb-1">Image URLs</label>
+          <input
+            type="text"
+            placeholder="Enter image URL(s)"
+            className="border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            value={imageUrls}
+            onChange={(e) => setImageUrls(e.target.value)}
+          />
+        </div>
+
+        {/* Price */}
+        <div className="flex flex-col">
+          <label className="font-medium mb-1">Price</label>
+          <input
+            type="number"
+            placeholder="Enter current price"
+            className="border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
+          />
+        </div>
+
+        {/* Last Price */}
+        <div className="flex flex-col">
+          <label className="font-medium mb-1">Last Price</label>
+          <input
+            type="number"
+            placeholder="Enter previous price"
+            className="border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            value={lastPrice}
+            onChange={(e) => setLastPrice(e.target.value)}
+          />
+        </div>
+
+        {/* Stock */}
+        <div className="flex flex-col">
+          <label className="font-medium mb-1">Stock</label>
+          <input
+            type="number"
+            placeholder="Enter available stock"
+            className="border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            value={stock}
+            onChange={(e) => setStock(e.target.value)}
+          />
+        </div>
+
+        {/* Description */}
+        <div className="flex flex-col">
+          <label className="font-medium mb-1">Description</label>
+          <textarea
+            placeholder="Enter product description"
+            className="border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
+        </div>
+
+        {/* Submit Button */}
+        <button
+          onClick={handelSubmit}
+          className="w-full py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition duration-200"
+        >
+          Add Product
+        </button>
+      </div>
+    </div>
+  );
+}
