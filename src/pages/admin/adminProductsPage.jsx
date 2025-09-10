@@ -1,71 +1,68 @@
 import axios from "axios"
 import { useEffect, useState } from "react"
+import { FaPlus, FaTrash } from "react-icons/fa"
+import { FaPencil } from "react-icons/fa6"
+import { Link } from "react-router-dom"
 
-export default function AdminProduct(){
+export default function AdminProduct() {
+  const [products, setProducts] = useState([])
 
-    const [products,setProducts] = useState([
-    {
-        "_id": "68b3078362262df9b7fd07ed",
-        "productId": "B2001",
-        "productName": "Hydrating Face Serum",
-        "altName": [
-            "Moisturizing Serum",
-            "Skin Glow Serum"
-        ],
-        "images": [
-            "https://example.com/images/serum1.jpg",
-            "https://example.com/images/serum2.jpg"
-        ],
-        "price": 3200,
-        "lastPrice": 4500,
-        "stock": 120,
-        "description": "A lightweight hydrating serum infused with hyaluronic acid and vitamin C. Helps to restore skin moisture, reduce dullness, and improve skin elasticity for a radiant glow.",
-        "__v": 0
-    },
-    {
-        "_id": "68b5b1832210948fc15df000",
-        "productId": "B2002",
-        "productName": "Laptop Dell Inspiron 15",
-        "altName": [
-            "Dell 15",
-            "Inspiron Laptop"
-        ],
-        "images": [
-            "https://example.com/images/laptop-front.jpg",
-            "https://example.com/images/laptop-back.jpg"
-        ],
-        "price": 145000,
-        "lastPrice": 150000,
-        "stock": 25,
-        "description": "Dell Inspiron 15 laptop with Intel i5 processor, 8GB RAM, 512GB SSD.",
-        "__v": 0
-    }
-])
-    useEffect(
-        ()=>{
-            axios.get("http://localhost:5000/api/product").then(
-                (res)=>{
-                console.log(res.data)
-                setProducts(res.data)
-                }
-            )
-        },[]
-    )
-    
+  useEffect(() => {
+    axios.get("http://localhost:5000/api/product").then((res) => {
+      console.log(res.data)
+      setProducts(res.data)
+    })
+  }, [])
 
-    return(
-        <div>           
-            {
-                products.map(
-                    (product)=>{
-                        return(
-                            <div>
-                                {product.productName}
-                            </div>
-                        )
-                    }
-                )
-            }
-        </div>
-    )
+  return (
+    <div className="p-6">
+      <h1 className="text-2xl font-semibold mb-4 text-gray-800 ">Admin Products</h1>
+
+      <div className="overflow-x-auto rounded-2xl shadow-lg border border-gray-200 ">
+        <Link to={"/admin/products/addProduct"} className="absolute right-[25px] bottom-[25px] text-[25px] text-white bg-[#3d82f6] p-4 rounded-xl hover:bg-blue-300 "><FaPlus/></Link>
+        <table className="min-w-full text-left text-sm text-gray-700">
+          <thead className="bg-gray-100 text-gray-800 text-sm uppercase tracking-wide">
+            <tr>
+              <th className="px-6 py-3">Product ID</th>
+              <th className="px-6 py-3">Product Name</th>
+              <th className="px-6 py-3">Price</th>
+              <th className="px-6 py-3">Last Price</th>
+              <th className="px-6 py-3">Stock</th>
+              <th className="px-6 py-3">Description</th>
+              <th className="px-6 py-3 text-center">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {products.map((product, index) => (
+              <tr
+                key={index}
+                className="border-b hover:bg-gray-50 transition"
+              >
+                <td className="px-6 py-4 font-medium">{product.productId}</td>
+                <td className="px-6 py-4">{product.productName}</td>
+                <td className="px-6 py-4 text-green-600 font-semibold">
+                  Rs. {product.price.toLocaleString()}
+                </td>
+                <td className="px-6 py-4 line-through text-gray-500">
+                  Rs. {product.lastPrice.toLocaleString()}
+                </td>
+                <td className="px-6 py-4">{product.stock}</td>
+                <td className="px-6 py-4 max-w-xs truncate">
+                  {product.description}
+                </td>
+                <td className="px-6 py-4 flex items-center justify-center gap-3">
+                  <button className="p-2 rounded-full bg-red-100 text-red-600 hover:bg-red-200 transition">
+                    <FaTrash />
+                  </button>
+                  <button className="p-2 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 transition">
+                    <FaPencil />
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
 }
