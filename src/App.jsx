@@ -5,7 +5,6 @@ import SignupPage from'./pages/singinPage'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import AdminHomePage from './pages/adminHomePage'
 import { Toaster } from 'react-hot-toast'
-import FileUploadTest from './components/testing'
 
 
 function App() {
@@ -19,7 +18,6 @@ function App() {
             <Route path="/login" element={<LoginPage/>}/>
             <Route path="/singin" element={<SignupPage/>}/>
             <Route path="/admin/*" element={<AdminHomePage/>}/>
-            <Route path='/testing' element={<FileUploadTest/>} />
             <Route path="/*" element={<HomePage/>}/>
           </Routes>
         </BrowserRouter>

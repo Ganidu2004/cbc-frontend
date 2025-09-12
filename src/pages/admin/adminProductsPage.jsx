@@ -46,10 +46,10 @@ export default function AdminProduct() {
               >
                 <td className="px-6 py-4 font-medium">{product.productId}</td>
                 <td className="px-6 py-4">{product.productName}</td>
-                <td className="px-6 py-4 text-green-600 font-semibold">
+                <td className="px-6 py-4 line-through text-gray-500">
                   Rs. {product.price.toLocaleString()}
                 </td>
-                <td className="px-6 py-4 line-through text-gray-500">
+                <td className="px-6 py-4 text-green-600 font-semibold">
                   Rs. {product.lastPrice.toLocaleString()}
                 </td>
                 <td className="px-6 py-4">{product.stock}</td>

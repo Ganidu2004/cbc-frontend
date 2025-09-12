@@ -9,6 +9,7 @@ export default function uploadMediaToSupabase(file){
         if(file == null){
             reject("File Not Added")
         }
+        //get the upload file extension
         let fileName = file.name
         const extension = fileName.split(".")[fileName.split(".").length-1]
 
@@ -18,9 +19,10 @@ export default function uploadMediaToSupabase(file){
         //Get the uniqe name for file.name 
         const timeStamp = new Date().getTime()
 
-        //set the uniqe name pluse (.) and extension 
-        fileName = timeStamp+"."+extension
+        //set the uniqe name pluse (.) and extension. uniqe name give the timestamp function 
+        fileName = timeStamp+file.name+"."+extension
 
+        //a function is supabase upload the file 
         supabase.storage.from("images").upload(fileName, file, {
             cacheControl : "3600",
             upsert : false

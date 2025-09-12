@@ -2,12 +2,13 @@ import axios from "axios";
 import { useState } from "react"
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import uploadMediaToSupabase from "../../utils/mediaUpload";
 
 export default function AddProductForm() {
   const [productId, setProductId] = useState("");
   const [productName, setProductName] = useState("");
   const [alternativeNames, setAlternativeNames] = useState("");
-  const [imageUrls, setImageUrls] = useState("");
+  const [imageFiles, setImageFiles] = useState([]);
   const [price, setPrice] = useState("");
   const [lastPrice, setLastPrice] = useState("");
   const [stock, setStock] = useState("");
@@ -17,7 +18,15 @@ export default function AddProductForm() {
 
   async function handelSubmit(){
     const altNames = alternativeNames.split(",");
-    const imgUrls = imageUrls.split(",")
+
+    const promisesArray = []
+
+    for(let i=0; i<imageFiles.length; i++ ){
+      promisesArray[i] = uploadMediaToSupabase(imageFiles[i])
+    }
+
+    const imgUrls = await Promise.all(promisesArray)
+
 
     const product = {
         productId : productId,
@@ -88,15 +97,25 @@ export default function AddProductForm() {
         </div>
 
         {/* Image URLs */}
-        <div className="flex flex-col">
-          <label className="font-medium mb-1">Image URLs</label>
-          <input
-            type="text"
-            placeholder="Enter image URL(s)"
-            className="border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-            value={imageUrls}
-            onChange={(e) => setImageUrls(e.target.value)}
-          />
+        <div className="flex flex-col space-y-2">
+          <label className="font-medium text-gray-700">Upload Images</label>
+          <div className="flex items-center justify-center w-full">
+            <label htmlFor="image-upload" className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-2xl cursor-pointer bg-gray-50 hover:bg-gray-100 transition duration-200 border-gray-300">
+              <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                <svg className="w-10 h-10 mb-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6H16a5 5 0 010 10h-1"></path>
+                </svg>
+                <p className="text-sm text-gray-500">
+                  <span className="font-semibold">Click to upload</span> or drag and drop
+                </p>
+                <p className="text-xs text-gray-400">PNG, JPG, JPEG (multiple allowed)</p>
+              </div>
+            <input id="image-upload" type="file" className="hidden"
+               multiple
+              onChange={(e) => setImageFiles(e.target.files)}
+            />
+          </label>
+          </div>
         </div>
 
         {/* Price */}
