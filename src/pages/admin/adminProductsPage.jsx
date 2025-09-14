@@ -66,8 +66,8 @@ export default function AdminProduct() {
                         },
                     }).then(()=>{
                         toast.success("Product Deleted Successfully");
+                        setProductLoaded(false);
                     })
-                    setProductLoaded(false);
                   }}>
                     <FaTrash />
                   </button>
