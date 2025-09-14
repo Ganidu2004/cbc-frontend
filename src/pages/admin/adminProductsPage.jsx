@@ -60,7 +60,7 @@ export default function AdminProduct() {
                   <button className="p-2 rounded-full bg-red-100 text-red-600 hover:bg-red-200 transition"
                    onClick={()=>{
                     const token = localStorage.getItem("token");
-                    axios.delete(`import.meta.env.VITE_BACKEND_URL/api/product/${product.productId}`,{
+                    axios.delete(`${import.meta.env.VITE_BACKEND_URL}/api/product/${product.productId}`,{
                         headers: {
                              Authorization: `Bearer ${token}`
                         },
