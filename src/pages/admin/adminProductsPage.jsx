@@ -3,10 +3,10 @@ import { useEffect, useState } from "react"
 import toast from "react-hot-toast"
 import { FaPlus, FaTrash } from "react-icons/fa"
 import { FaPencil } from "react-icons/fa6"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 
 export default function AdminProduct() {
-  const [products, setProducts] = useState([])
+  const [products, setProducts] = useState([]);
   const [productLoaded, setProductLoaded] = useState(false);
 
   useEffect(() => {
@@ -18,6 +18,8 @@ export default function AdminProduct() {
     }
     
   }, [productLoaded]);
+
+  const navigate = useNavigate();
 
   return (
     <div className="p-6">
@@ -47,10 +49,10 @@ export default function AdminProduct() {
                 <td className="px-6 py-4 font-medium">{product.productId}</td>
                 <td className="px-6 py-4">{product.productName}</td>
                 <td className="px-6 py-4 line-through text-gray-500">
-                  Rs. {product.price.toLocaleString()}
+                  LKR. {product.price.toLocaleString()}
                 </td>
                 <td className="px-6 py-4 text-green-600 font-semibold">
-                  Rs. {product.lastPrice.toLocaleString()}
+                  LKR. {product.lastPrice.toLocaleString()}
                 </td>
                 <td className="px-6 py-4">{product.stock}</td>
                 <td className="px-6 py-4 max-w-xs truncate">
@@ -71,7 +73,11 @@ export default function AdminProduct() {
                   }}>
                     <FaTrash />
                   </button>
-                  <button className="p-2 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 transition">
+                  <button className="p-2 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 transition"
+                  onClick={()=>{
+                    //Move to Edite Product Page
+                    navigate("/admin/products/editeProduct" ,{state : {product : product}})
+                  }}>
                     <FaPencil />
                   </button>
                 </td>

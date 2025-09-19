@@ -4,6 +4,9 @@ const key = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZi
 
 const url = "https://zkwlhqbiaknvfzmsndar.supabase.co"
 
+//supabase conection
+const supabase = createClient(url, key)
+
 export default function uploadMediaToSupabase(file){
     return new Promise((resolve,reject)=>{
         if(file == null){
@@ -12,10 +15,7 @@ export default function uploadMediaToSupabase(file){
         //get the upload file extension
         let fileName = file.name
         const extension = fileName.split(".")[fileName.split(".").length-1]
-
-        //supabase conection
-        const supabase = createClient(url, key)
-
+        
         //Get the uniqe name for file.name 
         const timeStamp = new Date().getTime()
 

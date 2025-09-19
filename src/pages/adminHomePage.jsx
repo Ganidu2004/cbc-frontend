@@ -4,6 +4,7 @@ import { FaBoxOpen, FaUsers } from "react-icons/fa";
 import { MdOutlineShoppingCart } from "react-icons/md";
 import AdminProduct from "./admin/adminProductsPage";
 import AddProductForm from "./admin/addProductForm";
+import EditeProductForm from "./admin/editeProductForm";
 
 export default function AdminHomePage() {
   return (
@@ -49,6 +50,7 @@ export default function AdminHomePage() {
           <Route path="/dashboard" element={<h1>Dashboard</h1>} />
           <Route path="/products" element={<AdminProduct/>} />
           <Route path="/products/addProduct" element={<AddProductForm/>} />
+          <Route path="products/editeProduct" element={<EditeProductForm/>}/>
           <Route path="/orders" element={<h1>Orders</h1>} />
           <Route path="/customers" element={<h1>Customers</h1>} />
           <Route path="/*" element={<h1>404 - Admin page not found</h1>} />
