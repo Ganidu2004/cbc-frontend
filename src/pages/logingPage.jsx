@@ -36,28 +36,28 @@ export default function LoginPage() {
           <h1 className="text-center text-3xl font-bold py-5">Welcome To <span className="text-blue-500">HGCK</span></h1>
           <h1 className="text-xl font-semibold">Sign In</h1>
           <form className="flex flex-col space-y-3">
-            <input className="outline-0 px-5 py-5 bg-gray-100" placeholder="Enter Your Email" defaultValue={email} onChange={
+            <input className="outline-0 px-5 py-3 bg-gray-100" placeholder="Enter Your Email" defaultValue={email} onChange={
                 (e)=>{
                   setEmail(e.target.value)
                 }
               }/>
-            <input type="password" className="outline-0 px-5 py-5 bg-gray-100" placeholder="Enter Your Password" defaultValue={password} onChange={
+            <input type="password" className="outline-0 px-5 py-3 bg-gray-100" placeholder="Enter Your Password" defaultValue={password} onChange={
               (e)=>{
                 setPassword(e.target.value)
               }
             }/>
             <div className="flex justify-center items-center">
               <div className="flex items-center space-x-2">
-                <input type="checkbox" name=""/>
+                <input type="checkbox" className="cursor-pointer" name=""/>
                 <p className="text-sm">Remember Me</p>
               </div>
             </div>
-            <button onClick={login} className="p-2 bg-blue-500 text-xl text-white font-bold rounded-md drop-shado-md hover:bg-blue-400">Login</button>
+            <button onClick={login} className="cursor-pointer p-2 bg-blue-500 text-xl text-white font-bold rounded-md drop-shado-md hover:bg-blue-400">Login</button>
             <p className="text-center text-sm pb-5 border-b"><span className="font-bold">Terms&Conditions</span> and <span className="font-bold">Privacy</span></p>
           </form>
           <div className="space-y-3">
             <p className="text-center">OR SINGN IN</p>
-            <button className="w-full p-4 bg-white border drop-shadow-md rounded-md space-x-5 flex items-center justify-center">
+            <button className="w-full p-2 bg-white border drop-shadow-md rounded-md space-x-3 flex items-center justify-center cursor-pointer hover:bg-blue-200">
               <FcGoogle className="text-2xl" /><span>Sign In With Google</span>
             </button>
           </div>
