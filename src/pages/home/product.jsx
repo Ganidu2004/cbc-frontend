@@ -25,11 +25,11 @@ export default function ProductPage(){
         },[]
     )
     return(
-        <div className="pt-[120px] w-full h-full flex flex-wrap justify-center">
+        <div className=" w-full h-full flex flex-wrap justify-center">
             {
                 products.map(
                     (product)=>
-                        <ProductCard product={product}/>
+                        <ProductCard key={product.id} product={product}/>
                 )
             }
         </div>

@@ -5,10 +5,10 @@ export default function ProductCard(props) {
     return (
         <div>
             <Link to={`/productInfo/${product.productId}`}>
-                <div className="w-[300px] h-[450px] m-[60px] rounded-xl shadow-lg shadow-gray-500 hover:shadow-primary hover:border-[4px] flex flex-col">
+                <div className="w-[300px] h-[450px] m-[70px] rounded-xl shadow-lg shadow-gray-500 hover:shadow-primary hover:border-[4px] overflow-hidden flex flex-col">
                     <img
                         src={product.images[0]}
-                        className="h-[60%] w-full object-cover overflow-hidden"
+                        className="h-[60%] w-full object-cover "
                         alt={product.productName}
                     />
                     <div className="max-h-[40%] h-[30%] p-3 flex flex-col justify-between">

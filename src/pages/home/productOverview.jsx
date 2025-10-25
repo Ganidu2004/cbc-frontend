@@ -44,7 +44,7 @@ function onAddToCartClick(){
             {
                 status == "Loading" && (
                     <div className="w-full h-full flex items-center justify-center">
-                        <div className="animate-spin rounded-full h-32 w-32 border-gray-300 border-b-accent border-4"></div>
+                        <div className="animate-spin rounded-full h-32 w-32 border-2 border-gray-300 border-b-accent border-b-4"></div>
                     </div>
                 )
             }
@@ -55,7 +55,7 @@ function onAddToCartClick(){
             }
             {
                 status == "found" && (
-                    <div className="pt-[120px] w-full h-full flex items-center justify-center">
+                    <div className="w-full h-full flex flex-col lg:flex-row items-center justify-center overflow-y-scroll">
                         <div className="w-[35%] h-full">
                             <ImgeSlider images={product.images}/>
                         </div>
