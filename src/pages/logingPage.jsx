@@ -2,10 +2,12 @@ import axios from "axios";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { FcGoogle } from "react-icons/fc";
+import { useNavigate } from "react-router-dom";
 
 export default function LoginPage() {
-  const [email,setEmail] = useState()
-  const [password,setPassword] = useState()
+  const navigate = useNavigate()
+  const [email,setEmail] = useState("")
+  const [password,setPassword] = useState("")
   function login(){
     axios.post(import.meta.env.VITE_BACKEND_URL+"/api/users/login",{
       email : email,
@@ -18,13 +20,14 @@ export default function LoginPage() {
         }
 
         toast.success("Login Success")
+        console.log(res.data.user.type)
 
         localStorage.setItem("token",res.data.token)
 
         if(res.data.user.type == "admin"){
-          window.location.href = "/admin"
+          navigate("/admin")
         }else{
-          window.location.href = "/"
+          navigate("/")
         }
       }
     )
@@ -36,12 +39,12 @@ export default function LoginPage() {
           <h1 className="text-center text-3xl font-bold py-5">Welcome To <span className="text-blue-500">HGCK</span></h1>
           <h1 className="text-xl font-semibold">Sign In</h1>
           <form className="flex flex-col space-y-3">
-            <input className="outline-0 px-5 py-3 bg-gray-100" placeholder="Enter Your Email" defaultValue={email} onChange={
+            <input className="outline-0 px-5 py-3 bg-gray-100" placeholder="Enter Your Email" value={email} onChange={
                 (e)=>{
                   setEmail(e.target.value)
                 }
               }/>
-            <input type="password" className="outline-0 px-5 py-3 bg-gray-100" placeholder="Enter Your Password" defaultValue={password} onChange={
+            <input type="password" className="outline-0 px-5 py-3 bg-gray-100" placeholder="Enter Your Password" value={password} onChange={
               (e)=>{
                 setPassword(e.target.value)
               }
@@ -52,7 +55,7 @@ export default function LoginPage() {
                 <p className="text-sm">Remember Me</p>
               </div>
             </div>
-            <button onClick={login} className="cursor-pointer p-2 bg-blue-500 text-xl text-white font-bold rounded-md drop-shado-md hover:bg-blue-400">Login</button>
+            <button type="button" onClick={login} className="cursor-pointer p-2 bg-blue-500 text-xl text-white font-bold rounded-md drop-shado-md hover:bg-blue-400">Login</button>
             <p className="text-center text-sm pb-5 border-b"><span className="font-bold">Terms&Conditions</span> and <span className="font-bold">Privacy</span></p>
           </form>
           <div className="space-y-3">
