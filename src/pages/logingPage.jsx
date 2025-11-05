@@ -63,6 +63,12 @@ export default function LoginPage() {
             <button className="w-full p-2 bg-white border drop-shadow-md rounded-md space-x-3 flex items-center justify-center cursor-pointer hover:bg-blue-200">
               <FcGoogle className="text-2xl" /><span>Sign In With Google</span>
             </button>
+            <p className="text-center text-gray-500 text-sm mt-4">
+                Already create an account?{" "}
+                <span onClick={() => navigate("/singin")} className="text-blue-500 hover:underline cursor-pointer">
+                  Register
+                </span>
+              </p>
           </div>
         </div>
       </div>
