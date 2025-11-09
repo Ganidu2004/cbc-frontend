@@ -49,8 +49,8 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-400 to-teal-400 p-4">
-      <div className="bg-white rounded-2xl shadow-lg p-10 max-w-sm w-full">
+    <div className="min-h-screen flex items-center justify-center bg-[#FFD68B] p-4">
+      <div className="bg-[#FF9C8F] rounded-2xl shadow-lg p-10 max-w-sm w-full">
         <h1 className="text-3xl font-bold text-center text-gray-800 mb-6">Create Account</h1>
 
         <div className="space-y-4">
@@ -81,11 +81,11 @@ export default function SignupPage() {
 
         </div>
 
-        <button onClick={handleSignup} className="w-full mt-6 bg-blue-500 text-white py-3 rounded-lg font-semibold hover:bg-blue-600 transition">
+        <button onClick={handleSignup} className="w-full mt-6 bg-accent text-white py-3 rounded-lg font-semibold hover:bg-accent-light transition">
           Sign Up
         </button>
 
-        <p className="text-center text-gray-500 text-sm mt-4">
+        <p className="text-center text-black text-sm mt-4">
           Already have an account?{" "}
           <span onClick={() => navigate("/login")}
             className="text-blue-500 hover:underline cursor-pointer">
