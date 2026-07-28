@@ -4,17 +4,28 @@ import LoginPage from "./logingPage";
 import ProductOverview from "./home/productOverview";
 import ProductPage from "./home/product";
 import Cart from "./home/cart";
+import HomeContent from "./home/HomeContent";
+import About from "./home/about";
+import Contact from "./home/contact";
+import Invoice from "./home/invoice";
+import Profile from "./home/profile";
+import Checkout from "./home/checkout";
 
 export default function HomePage() {
   return (
-    <div className="h-screen w-full bg-primary">
+    <div className="min-h-screen w-full bg-primary relative">
       <Header/>
-      <div className="w-full h-[calc(100vh-100px)]">
+      <div className="w-full">
         <Routes>
-          <Route path="/" element={<h1>Home page</h1>}/>
+          <Route path="/" element={<HomeContent />}/>
           <Route path="/product" element={<ProductPage/>}/>
+          <Route path="/about" element={<About/>}/>
+          <Route path="/contact" element={<Contact/>}/>
           <Route path="/login" element={<LoginPage/>}/>
           <Route path="/cart" element={<Cart/>}/>
+          <Route path="/checkout" element={<Checkout/>}/>
+          <Route path="/profile" element={<Profile/>}/>
+          <Route path="/invoice/:orderId" element={<Invoice/>}/>
           <Route path="/productInfo/:id" element={<ProductOverview/>}/>
         </Routes>
       </div>

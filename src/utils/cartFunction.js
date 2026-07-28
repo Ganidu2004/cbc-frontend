@@ -46,5 +46,6 @@ export function deleteItem(productId){
 
     if(index != -1){
         cart.splice(index,1)
+        saveCart(cart)
     }
 }
