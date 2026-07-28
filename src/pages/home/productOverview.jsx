@@ -2,7 +2,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom"
 import ProductNotFound from "./productNotFound";
-import ImgeSlider from "../../components/imgeSlider";
+import ImageSlider from "../../components/common/ImageSlider";
 import { addToCart } from "../../utils/cartFunction";
 import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
@@ -87,7 +87,7 @@ export default function ProductOverview(){
                     animate={{ opacity: 1, x: 0 }}
                     className="w-full lg:w-1/2 h-auto sticky top-28"
                 >
-                    <ImgeSlider images={product.images}/>
+                    <ImageSlider images={product.images}/>
                 </motion.div>
                 
                 <motion.div 

@@ -5,7 +5,7 @@ import { MdOutlineShoppingCart } from "react-icons/md";
 import { FiLogOut } from "react-icons/fi";
 import AdminProduct from "./admin/adminProductsPage";
 import AddProductForm from "./admin/addProductForm";
-import EditeProductForm from "./admin/editeProductForm";
+import EditProductForm from "./admin/editProductForm";
 import AdminDashboard from "./admin/adminDashboard";
 import AdminOrdersPage from "./admin/adminOrdersPage";
 import AdminOrderDetailsPage from "./admin/adminOrderDetailsPage";
@@ -96,7 +96,7 @@ export default function AdminHomePage() {
               <Route path="/dashboard" element={<AdminDashboard />} />
               <Route path="/products" element={<AdminProduct />} />
               <Route path="/products/addProduct" element={<AddProductForm />} />
-              <Route path="/products/editeProduct" element={<EditeProductForm />} />
+              <Route path="/products/editeProduct" element={<EditProductForm />} />
               <Route path="/orders" element={<AdminOrdersPage />} />
               <Route path="/orders/:orderId" element={<AdminOrderDetailsPage />} />
               <Route path="/addAdmin" element={<AddAdminForm />} />

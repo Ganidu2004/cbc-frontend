@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { loadCart } from "../../utils/cartFunction";
-import CartCade from "../../components/cartCade";
+import CartCard from "../../components/common/CartCard";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiLock, FiArrowRight, FiShoppingBag, FiTag, FiChevronRight, FiCheckCircle } from "react-icons/fi";
@@ -164,7 +164,7 @@ export default function Cart() {
                 
                 <div className="flex flex-col gap-6">
                   {cart.map((item) => (
-                    <CartCade key={item.productId} productId={item.productId} qty={item.qty} />
+                    <CartCard key={item.productId} productId={item.productId} qty={item.qty} />
                   ))}
                 </div>
               </div>
