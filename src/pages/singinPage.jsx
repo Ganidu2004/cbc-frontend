@@ -4,9 +4,18 @@ import toast from "react-hot-toast";
 import { useNavigate, Link } from "react-router-dom";
 import uploadMediaToSupabase from "../utils/mediaUpload";
 import { motion, AnimatePresence } from "framer-motion";
-import { FiArrowRight, FiUploadCloud, FiCheckCircle, FiEye, FiEyeOff } from "react-icons/fi";
+import { FiArrowRight, FiUploadCloud, FiCheckCircle, FiXCircle, FiEye, FiEyeOff, FiAlertCircle } from "react-icons/fi";
 import { FcGoogle } from "react-icons/fc";
 import { FaApple } from "react-icons/fa";
+
+// --- Validation helpers ---
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PWD_RULES = [
+  { id: "length", label: "At least 8 characters", test: (p) => p.length >= 8 },
+  { id: "upper", label: "One uppercase letter", test: (p) => /[A-Z]/.test(p) },
+  { id: "number", label: "One number", test: (p) => /[0-9]/.test(p) },
+  { id: "special", label: "One special character", test: (p) => /[^A-Za-z0-9]/.test(p) },
+];
 
 export default function SignupPage() {
   const navigate = useNavigate();
@@ -20,11 +29,19 @@ export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [file, setFile] = useState(null);
-  
+
   // UX State
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState(0);
+
+  // Validation error state
+  const [touched, setTouched] = useState({ fName: false, lName: false, email: false, password: false, confirmPassword: false });
+  const [emailError, setEmailError] = useState("");
+  const [pwdErrors, setPwdErrors] = useState([]);
+  const [showPwdChecklist, setShowPwdChecklist] = useState(false);
 
   // OTP State
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
@@ -34,19 +51,30 @@ export default function SignupPage() {
   const [address, setAddress] = useState("");
   const [district, setDistrict] = useState("Colombo");
   const [preferences, setPreferences] = useState([]);
-  
+
   const PREFERENCE_OPTIONS = ["Skincare", "Makeup", "Fragrance", "Haircare", "Oily Skin", "Dry Skin"];
   const DISTRICTS = ["Ampara", "Anuradhapura", "Badulla", "Batticaloa", "Colombo", "Galle", "Gampaha", "Hambantota", "Jaffna", "Kalutara", "Kandy", "Kegalle", "Kilinochchi", "Kurunegala", "Mannar", "Matale", "Matara", "Monaragala", "Mullaitivu", "Nuwara Eliya", "Polonnaruwa", "Puttalam", "Ratnapura", "Trincomalee", "Vavuniya"];
 
-  // Evaluate Password Strength
+  // --- Derived validation ---
+  const pwdRuleResults = PWD_RULES.map((r) => ({ ...r, passed: r.test(password) }));
+  const passedCount = pwdRuleResults.filter((r) => r.passed).length;
+
+  // Sync password strength (0-4 scale)
   useEffect(() => {
-    let score = 0;
-    if (password.length > 7) score++;
-    if (/[A-Z]/.test(password)) score++;
-    if (/[0-9]/.test(password)) score++;
-    if (/[^A-Za-z0-9]/.test(password)) score++;
-    setPasswordStrength(score);
-  }, [password]);
+    setPasswordStrength(passedCount);
+  }, [passedCount]);
+
+  // Validate email on change
+  useEffect(() => {
+    if (!touched.email) return;
+    if (!email) {
+      setEmailError("Email is required.");
+    } else if (!EMAIL_REGEX.test(email)) {
+      setEmailError("Please enter a valid email address (e.g. jane@example.com).");
+    } else {
+      setEmailError("");
+    }
+  }, [email, touched.email]);
 
   // OTP Timer
   useEffect(() => {
@@ -56,15 +84,33 @@ export default function SignupPage() {
     }
   }, [step, countdown]);
 
+  const handleBlur = (field) => setTouched((t) => ({ ...t, [field]: true }));
+
   const handleNextStep = (e) => {
     e.preventDefault();
     if (step === 1) {
-      if (passwordStrength < 3) {
-        toast.error("Please enter a stronger password.");
+      // Force-touch all fields to show errors
+      setTouched({ fName: true, lName: true, email: true, password: true });
+
+      // Client-side guard: email
+      if (!EMAIL_REGEX.test(email)) {
+        setEmailError("Please enter a valid email address.");
         return;
       }
+      // Client-side guard: password strength
+      if (passedCount < 4) {
+        setShowPwdChecklist(true);
+        toast.error("Please create a stronger password.");
+        return;
+      }
+      // Client-side guard: confirm password
+      if (password !== confirmPassword) {
+        toast.error("Passwords do not match.");
+        return;
+      }
+
       setStep(2);
-      setCountdown(60); // Reset timer for OTP
+      setCountdown(60);
     } else if (step === 2) {
       if (otp.join("").length !== 6) {
         toast.error("Please enter the 6-digit code.");
@@ -93,19 +139,25 @@ export default function SignupPage() {
         password: password,
         type: "customer",
         profilePic: imageUrl,
-        // In a real app, you'd also send address, district, and preferences here
       };
 
       await axios.post(import.meta.env.VITE_BACKEND_URL + "/api/users/register", newUser);
       toast.success("Account created successfully!");
-      setStep(5); // Show welcome modal
+      setStep(5);
     } catch (err) {
-      console.error(err);
-      toast.error("Failed to create account. Please try again.");
+      // Surface the server's specific error message if available
+      const serverMsg = err.response?.data?.message;
+      toast.error(serverMsg || "Failed to create account. Please try again.");
+      // If it's an email conflict, send user back to step 1
+      if (err.response?.status === 409) {
+        setStep(1);
+        setEmailError(serverMsg);
+      }
     } finally {
       setIsSubmitting(false);
     }
   };
+
 
   const handleOtpChange = (element, index) => {
     if (isNaN(element.value)) return false;
@@ -128,10 +180,10 @@ export default function SignupPage() {
 
   return (
     <div className="w-full min-h-screen flex bg-primary relative">
-      
+
       {/* Gamified Progress Bar */}
       <div className="absolute top-0 left-0 right-0 h-1.5 bg-gray-200 z-50">
-        <motion.div 
+        <motion.div
           className="h-full bg-primary-dark"
           initial={{ width: "20%" }}
           animate={{ width: `${(step / 5) * 100}%` }}
@@ -140,18 +192,18 @@ export default function SignupPage() {
 
       {/* Left Form Section */}
       <div className="w-full lg:w-1/2 flex flex-col items-center justify-center p-8 md:p-12 lg:p-24 bg-primary relative overflow-y-auto">
-        
+
         <Link to="/" className="absolute top-8 left-8 text-sm uppercase tracking-widest text-gray-500 hover:text-primary-dark transition-colors font-medium z-10">
           ← Back
         </Link>
 
         <div className="w-full max-w-md mt-12 mb-12">
-          
+
           <AnimatePresence mode="wait">
-            
+
             {/* STEP 1: REGISTRATION */}
             {step === 1 && (
-              <motion.div 
+              <motion.div
                 key="step1"
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -159,7 +211,7 @@ export default function SignupPage() {
                 transition={{ duration: 0.3 }}
               >
                 <div className="text-center mb-8">
-                  <h1 className="font-serif text-3xl text-primary-dark mb-2">Join the Club</h1>
+                  <h1 className="font-serif text-3xl text-primary-dark mb-2">Join the Shop</h1>
                   <p className="text-gray-500 font-light text-sm">Create an account to unlock exclusive rewards and personalized routines.</p>
                 </div>
 
@@ -182,47 +234,70 @@ export default function SignupPage() {
                   <div className="flex gap-4">
                     <div className="space-y-1 flex-1">
                       <label className="text-xs uppercase tracking-widest text-gray-500 font-semibold">First Name</label>
-                      <input 
+                      <input
                         type="text" required
-                        className="w-full bg-transparent border-b border-gray-300 py-2 text-primary-dark focus:outline-none focus:border-primary-dark transition-colors" 
+                        className={`w-full bg-transparent border-b py-2 text-primary-dark focus:outline-none transition-colors ${touched.fName && !fName ? 'border-red-400' : 'border-gray-300 focus:border-primary-dark'}`}
                         placeholder="Jane"
-                        value={fName} onChange={(e) => setFname(e.target.value)} 
+                        value={fName}
+                        onChange={(e) => setFname(e.target.value)}
+                        onBlur={() => handleBlur('fName')}
                       />
+                      {touched.fName && !fName && (
+                        <p className="text-xs text-red-500 flex items-center gap-1 mt-1"><FiAlertCircle size={11} /> First name is required.</p>
+                      )}
                     </div>
                     <div className="space-y-1 flex-1">
                       <label className="text-xs uppercase tracking-widest text-gray-500 font-semibold">Last Name</label>
-                      <input 
+                      <input
                         type="text" required
-                        className="w-full bg-transparent border-b border-gray-300 py-2 text-primary-dark focus:outline-none focus:border-primary-dark transition-colors" 
+                        className={`w-full bg-transparent border-b py-2 text-primary-dark focus:outline-none transition-colors ${touched.lName && !lName ? 'border-red-400' : 'border-gray-300 focus:border-primary-dark'}`}
                         placeholder="Doe"
-                        value={lName} onChange={(e) => setLname(e.target.value)} 
+                        value={lName}
+                        onChange={(e) => setLname(e.target.value)}
+                        onBlur={() => handleBlur('lName')}
                       />
+                      {touched.lName && !lName && (
+                        <p className="text-xs text-red-500 flex items-center gap-1 mt-1"><FiAlertCircle size={11} /> Last name is required.</p>
+                      )}
                     </div>
                   </div>
 
                   <div className="space-y-1 relative">
                     <label className="text-xs uppercase tracking-widest text-gray-500 font-semibold">Email Address</label>
-                    <input 
-                      type="email" required
-                      className="w-full bg-transparent border-b border-gray-300 py-2 text-primary-dark focus:outline-none focus:border-primary-dark transition-colors pr-8" 
-                      placeholder="jane@example.com"
-                      value={email} onChange={(e) => setEmail(e.target.value)} 
-                    />
-                    {email.includes("@") && email.includes(".") && (
-                      <FiCheckCircle className="absolute right-0 top-8 text-green-500" />
+                    <div className="relative">
+                      <input
+                        type="text"
+                        required
+                        className={`w-full bg-transparent border-b py-2 text-primary-dark focus:outline-none transition-colors pr-8 ${emailError ? 'border-red-400' : (email && !emailError ? 'border-green-400' : 'border-gray-300 focus:border-primary-dark')}`}
+                        placeholder="jane@example.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        onBlur={() => handleBlur('email')}
+                      />
+                      {touched.email && (
+                        email && !emailError
+                          ? <FiCheckCircle className="absolute right-0 top-2.5 text-green-500" size={16} />
+                          : emailError ? <FiAlertCircle className="absolute right-0 top-2.5 text-red-400" size={16} /> : null
+                      )}
+                    </div>
+                    {emailError && (
+                      <p className="text-xs text-red-500 flex items-center gap-1 mt-1"><FiAlertCircle size={11} /> {emailError}</p>
                     )}
                   </div>
 
                   <div className="space-y-1 relative">
                     <label className="text-xs uppercase tracking-widest text-gray-500 font-semibold">Password</label>
                     <div className="relative">
-                      <input 
+                      <input
                         type={showPassword ? "text" : "password"} required
-                        className="w-full bg-transparent border-b border-gray-300 py-2 text-primary-dark focus:outline-none focus:border-primary-dark transition-colors pr-10" 
+                        className={`w-full bg-transparent border-b py-2 text-primary-dark focus:outline-none transition-colors pr-10 ${touched.password && passedCount < 4 ? 'border-red-400' : (passedCount === 4 ? 'border-green-400' : 'border-gray-300 focus:border-primary-dark')}`}
                         placeholder="Create a strong password"
-                        value={password} onChange={(e) => setPassword(e.target.value)} 
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        onFocus={() => setShowPwdChecklist(true)}
+                        onBlur={() => handleBlur('password')}
                       />
-                      <button 
+                      <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
                         className="absolute right-0 top-3 text-gray-400 hover:text-gray-600"
@@ -230,21 +305,97 @@ export default function SignupPage() {
                         {showPassword ? <FiEyeOff /> : <FiEye />}
                       </button>
                     </div>
-                    {/* Password Strength Meter */}
+
+                    {/* Password strength bar */}
                     <div className="flex gap-1 mt-2">
                       {[1, 2, 3, 4].map(level => (
-                        <div key={level} className={`h-1 flex-1 rounded-full ${password.length === 0 ? 'bg-gray-200' : passwordStrength >= level ? (passwordStrength < 3 ? 'bg-amber-400' : 'bg-green-500') : 'bg-gray-200'}`} />
+                        <div key={level} className={`h-1 flex-1 rounded-full transition-all duration-300 ${password.length === 0 ? 'bg-gray-200'
+                            : passwordStrength >= level
+                              ? (passwordStrength < 2 ? 'bg-red-400' : passwordStrength < 4 ? 'bg-amber-400' : 'bg-green-500')
+                              : 'bg-gray-200'
+                          }`} />
                       ))}
                     </div>
+                    <p className="text-[10px] text-gray-400 mt-1 font-medium tracking-wide">
+                      {password.length === 0 ? '' : passwordStrength < 2 ? '⚠ Weak' : passwordStrength < 4 ? '⚡ Getting stronger' : '✓ Strong password'}
+                    </p>
+
+                    {/* Live password requirements checklist */}
+                    <AnimatePresence>
+                      {showPwdChecklist && password.length > 0 && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          exit={{ opacity: 0, height: 0 }}
+                          className="mt-3 p-3 bg-gray-50 rounded-xl border border-gray-100 overflow-hidden"
+                        >
+                          <p className="text-[10px] uppercase tracking-widest text-gray-400 font-bold mb-2">Password Requirements</p>
+                          <div className="space-y-1.5">
+                            {pwdRuleResults.map((rule) => (
+                              <div key={rule.id} className={`flex items-center gap-2 text-xs font-medium transition-colors ${rule.passed ? 'text-green-600' : 'text-gray-400'}`}>
+                                {rule.passed
+                                  ? <FiCheckCircle size={13} className="shrink-0" />
+                                  : <FiXCircle size={13} className="shrink-0 text-gray-300" />}
+                                {rule.label}
+                              </div>
+                            ))}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+
+                  {/* Confirm Password */}
+                  <div className="space-y-1 relative">
+                    <label className="text-xs uppercase tracking-widest text-gray-500 font-semibold">Confirm Password</label>
+                    <div className="relative">
+                      <input
+                        type={showConfirmPassword ? "text" : "password"}
+                        required
+                        className={`w-full bg-transparent border-b py-2 text-primary-dark focus:outline-none transition-colors pr-10 ${
+                          touched.confirmPassword && confirmPassword && password !== confirmPassword
+                            ? 'border-red-400'
+                            : touched.confirmPassword && confirmPassword && password === confirmPassword
+                            ? 'border-green-400'
+                            : 'border-gray-300 focus:border-primary-dark'
+                        }`}
+                        placeholder="Repeat your password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        onBlur={() => handleBlur('confirmPassword')}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute right-0 top-3 text-gray-400 hover:text-gray-600"
+                      >
+                        {showConfirmPassword ? <FiEyeOff /> : <FiEye />}
+                      </button>
+                      {touched.confirmPassword && confirmPassword && (
+                        password === confirmPassword
+                          ? <FiCheckCircle className="absolute right-8 top-2.5 text-green-500" size={15} />
+                          : <FiAlertCircle className="absolute right-8 top-2.5 text-red-400" size={15} />
+                      )}
+                    </div>
+                    {touched.confirmPassword && confirmPassword && password !== confirmPassword && (
+                      <p className="text-xs text-red-500 flex items-center gap-1 mt-1">
+                        <FiAlertCircle size={11} /> Passwords do not match.
+                      </p>
+                    )}
+                    {touched.confirmPassword && confirmPassword && password === confirmPassword && (
+                      <p className="text-xs text-green-600 flex items-center gap-1 mt-1">
+                        <FiCheckCircle size={11} /> Passwords match!
+                      </p>
+                    )}
                   </div>
 
                   <div className="space-y-1 pt-2">
                     <label className="text-xs uppercase tracking-widest text-gray-500 font-semibold mb-2 block">Profile Picture (Optional)</label>
                     <div className="relative overflow-hidden">
-                      <input 
-                        type="file" 
+                      <input
+                        type="file"
                         onChange={(e) => setFile(e.target.files[0])}
-                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" 
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                       />
                       <div className="w-full bg-gray-50 border border-gray-200 border-dashed text-primary-dark text-sm rounded-xl px-4 py-3 outline-none flex items-center justify-center gap-2 hover:bg-gray-100 transition-colors">
                         <FiUploadCloud /> {file ? 'Image Selected' : 'Upload Avatar'}
@@ -263,7 +414,7 @@ export default function SignupPage() {
                     </label>
                   </div>
 
-                  <button 
+                  <button
                     type="submit"
                     className="w-full bg-primary-dark text-white py-4 rounded-xl uppercase tracking-widest text-sm font-medium hover:bg-black transition-colors flex justify-center items-center gap-2 group mt-8 shadow-md"
                   >
@@ -279,7 +430,7 @@ export default function SignupPage() {
 
             {/* STEP 2: OTP VERIFICATION */}
             {step === 2 && (
-              <motion.div 
+              <motion.div
                 key="step2"
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -290,7 +441,7 @@ export default function SignupPage() {
                   <FiCheckCircle className="text-3xl text-green-500" />
                 </div>
                 <h2 className="font-serif text-3xl text-primary-dark mb-2">Verify Your Email</h2>
-                <p className="text-gray-500 font-light text-sm mb-8">We've sent a 6-digit code to <br/><span className="font-medium text-primary-dark">{email}</span></p>
+                <p className="text-gray-500 font-light text-sm mb-8">We've sent a 6-digit code to <br /><span className="font-medium text-primary-dark">{email}</span></p>
 
                 <form onSubmit={handleNextStep}>
                   <div className="flex justify-center gap-3 mb-8">
@@ -309,7 +460,7 @@ export default function SignupPage() {
                     ))}
                   </div>
 
-                  <button 
+                  <button
                     type="submit"
                     className="w-full bg-primary-dark text-white py-4 rounded-xl uppercase tracking-widest text-sm font-medium hover:bg-black transition-colors shadow-md mb-6"
                   >
@@ -324,7 +475,7 @@ export default function SignupPage() {
                       <button type="button" className="text-primary-dark font-medium hover:underline" onClick={() => setCountdown(60)}>Resend Code</button>
                     )}
                   </p>
-                  
+
                   <button type="button" onClick={() => setStep(1)} className="text-xs uppercase tracking-widest text-gray-400 hover:text-gray-600 mt-8 font-medium">
                     ← Change Email
                   </button>
@@ -334,7 +485,7 @@ export default function SignupPage() {
 
             {/* STEP 3: SHIPPING SETUP */}
             {step === 3 && (
-              <motion.div 
+              <motion.div
                 key="step3"
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -349,18 +500,18 @@ export default function SignupPage() {
                 <form onSubmit={handleNextStep} className="space-y-5">
                   <div className="space-y-1">
                     <label className="text-xs uppercase tracking-widest text-gray-500 font-semibold">Street Address</label>
-                    <input 
-                      type="text" 
-                      className="w-full bg-transparent border-b border-gray-300 py-3 text-primary-dark focus:outline-none focus:border-primary-dark transition-colors" 
+                    <input
+                      type="text"
+                      className="w-full bg-transparent border-b border-gray-300 py-3 text-primary-dark focus:outline-none focus:border-primary-dark transition-colors"
                       placeholder="E.g. 123 Luxury Avenue"
-                      value={address} onChange={(e) => setAddress(e.target.value)} 
+                      value={address} onChange={(e) => setAddress(e.target.value)}
                     />
                   </div>
 
                   <div className="space-y-1">
                     <label className="text-xs uppercase tracking-widest text-gray-500 font-semibold mb-2 block">District / Region</label>
-                    <select 
-                      value={district} 
+                    <select
+                      value={district}
                       onChange={(e) => setDistrict(e.target.value)}
                       className="w-full appearance-none bg-white border border-gray-200 text-primary-dark text-sm rounded-xl px-4 py-3 outline-none cursor-pointer focus:border-primary-dark transition-colors shadow-sm"
                     >
@@ -382,7 +533,7 @@ export default function SignupPage() {
 
             {/* STEP 4: SHOPPING PREFERENCES */}
             {step === 4 && (
-              <motion.div 
+              <motion.div
                 key="step4"
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -407,7 +558,7 @@ export default function SignupPage() {
                   ))}
                 </div>
 
-                <button 
+                <button
                   onClick={handleNextStep}
                   disabled={isSubmitting}
                   className="w-full bg-primary-dark text-white py-4 rounded-xl uppercase tracking-widest text-sm font-medium hover:bg-black transition-colors flex justify-center items-center gap-2 shadow-md disabled:opacity-70"
@@ -424,9 +575,9 @@ export default function SignupPage() {
 
       {/* Right Image Section */}
       <div className="hidden lg:block lg:w-1/2 relative">
-        <img 
-          src="https://images.unsplash.com/photo-1616683693504-3ea7e9ad6fec?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" 
-          alt="Luxury Skincare" 
+        <img
+          src="https://images.unsplash.com/photo-1616683693504-3ea7e9ad6fec?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"
+          alt="Luxury Skincare"
           className="absolute inset-0 w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-black/10" />
@@ -435,12 +586,12 @@ export default function SignupPage() {
       {/* STEP 5: WELCOME MODAL OVERLAY */}
       <AnimatePresence>
         {step === 5 && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4"
           >
-            <motion.div 
+            <motion.div
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden"
@@ -456,7 +607,7 @@ export default function SignupPage() {
                   <span className="text-xs uppercase tracking-widest text-gray-400 font-bold mb-1">Coupon Code</span>
                   <span className="text-2xl font-serif text-primary-dark tracking-wider">WELCOME10</span>
                 </div>
-                <button 
+                <button
                   onClick={() => navigate('/profile')}
                   className="w-full bg-primary-dark text-white py-4 rounded-xl uppercase tracking-widest text-sm font-medium hover:bg-black transition-colors"
                 >
