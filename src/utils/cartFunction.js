@@ -1,51 +1,33 @@
-export function loadCart(){
-    const cart = localStorage.getItem("cart")
+/**
+ * Legacy Cart Utility Facade
+ * Refactored to delegate call execution to Clean Architecture Domain Use Cases & Repositories.
+ */
+import { defaultCartRepository } from '../features/cart/adapters/repositories/LocalStorageCartRepository';
+import { AddToCartUseCase } from '../features/cart/usecases/AddToCartUseCase';
+import { RemoveFromCartUseCase, ClearCartUseCase } from '../features/cart/usecases/CartUseCases';
 
-    if(cart != null){
-        return JSON.parse(cart)
-    }else{
-        return[]
-    }
+const addToCartUseCase = new AddToCartUseCase(defaultCartRepository);
+const removeFromCartUseCase = new RemoveFromCartUseCase(defaultCartRepository);
+const clearCartUseCase = new ClearCartUseCase(defaultCartRepository);
+
+export function loadCart() {
+  const raw = localStorage.getItem('cart');
+  return raw ? JSON.parse(raw) : [];
 }
 
-export function addToCart(productId,qty){
-    const cart = loadCart()
-
-    const index = cart.findIndex(
-        (item) => {return item.productId == productId}
-    )
-    if(index == -1){
-        cart.push(
-            {productId,qty}
-        )
-    }else{
-        const newQty = cart[index].qty + qty
-        if(newQty<=0){
-            cart.splice(index,1)
-        }else{
-            cart[index].qty = newQty
-        }
-    }
-    saveCart(cart)
+export function saveCart(cart) {
+  localStorage.setItem('cart', JSON.stringify(cart));
 }
 
-export function saveCart(cart){
-    localStorage.setItem("cart",JSON.stringify(cart))
+export async function addToCart(productId, qty) {
+  const payload = typeof productId === 'object' ? productId : { productId, qty };
+  await addToCartUseCase.execute(payload);
 }
 
-export function clearCart(){
-    localStorage.removeItem("cart")
+export async function clearCart() {
+  await clearCartUseCase.execute();
 }
 
-export function deleteItem(productId){
-    const cart = loadCart()
-
-    const index = cart.findIndex(
-        (item) => {return item.productId == productId}
-    )
-
-    if(index != -1){
-        cart.splice(index,1)
-        saveCart(cart)
-    }
+export async function deleteItem(productId) {
+  await removeFromCartUseCase.execute(productId);
 }
