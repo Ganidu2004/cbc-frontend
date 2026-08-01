@@ -2,7 +2,7 @@ import { Routes, Route, Link, useLocation, useNavigate } from "react-router-dom"
 import { BsGraphUp } from "react-icons/bs";
 import { FaBoxOpen, FaUsers } from "react-icons/fa";
 import { MdOutlineShoppingCart } from "react-icons/md";
-import { FiLogOut } from "react-icons/fi";
+import { FiLogOut, FiFileText } from "react-icons/fi";
 import AdminProduct from "./admin/adminProductsPage";
 import AddProductForm from "./admin/addProductForm";
 import EditProductForm from "./admin/editProductForm";
@@ -11,6 +11,7 @@ import AdminOrdersPage from "./admin/adminOrdersPage";
 import AdminOrderDetailsPage from "./admin/adminOrderDetailsPage";
 import AddAdminForm from "./admin/addAdminForm";
 import AdminCustomersPage from "./admin/adminCustomersPage";
+import AdminReportsPage from "./admin/adminReportsPage";
 import { motion } from "framer-motion";
 
 export default function AdminHomePage() {
@@ -59,6 +60,10 @@ export default function AdminHomePage() {
               <FaBoxOpen size={20} /> <span className="text-sm uppercase tracking-widest font-medium">Products</span>
             </Link>
 
+            <Link className={getLinkClass("/admin/reports")} to="/admin/reports">
+              <FiFileText size={20} /> <span className="text-sm uppercase tracking-widest font-medium">Reports</span>
+            </Link>
+
             <Link className={getLinkClass("/admin/customers")} to="/admin/customers">
               <FaUsers size={20} /> <span className="text-sm uppercase tracking-widest font-medium">Customers</span>
             </Link>
@@ -94,6 +99,7 @@ export default function AdminHomePage() {
           >
             <Routes>
               <Route path="/dashboard" element={<AdminDashboard />} />
+              <Route path="/reports" element={<AdminReportsPage />} />
               <Route path="/products" element={<AdminProduct />} />
               <Route path="/products/addProduct" element={<AddProductForm />} />
               <Route path="/products/editeProduct" element={<EditProductForm />} />
