@@ -10,9 +10,7 @@ import { FiMinus, FiPlus, FiChevronDown, FiChevronUp, FiCheckCircle, FiShield } 
 
 // PDP New Components
 import VirtualTryOn from "../../components/pdp/VirtualTryOn";
-import BeforeAfterSlider from "../../components/pdp/BeforeAfterSlider";
-import IngredientExplorer from "../../components/pdp/IngredientExplorer";
-import CommunityGallery from "../../components/pdp/CommunityGallery";
+import ProductReviews from "../../components/pdp/ProductReviews";
 
 const MOCK_PRODUCT = {
     productId: 'mock-1',
@@ -228,14 +226,8 @@ export default function ProductOverview(){
                 </motion.div>
             </div>
 
-            {/* Middle Section: Before/After */}
-            <BeforeAfterSlider />
-
-            {/* Texture/Ingredient Section */}
-            <IngredientExplorer />
-
-            {/* Bottom Section: Community Reviews */}
-            <CommunityGallery productId={ProductId} />
+            {/* Real Verified Customer Reviews */}
+            <ProductReviews productId={ProductId} productName={product?.productName} />
         </div>
     )
 }

@@ -31,6 +31,12 @@ export default function Checkout() {
     const [paymentMethod, setPaymentMethod] = useState("card");
     const [cardType, setCardType] = useState("visa");
     const [isProcessing, setIsProcessing] = useState(false);
+
+    // Gift Packaging State
+    const [isGift, setIsGift] = useState(false);
+    const [giftWrappingType, setGiftWrappingType] = useState("luxury_box");
+    const [giftMessage, setGiftMessage] = useState("");
+    const [hidePrice, setHidePrice] = useState(true);
     
     useEffect(() => {
         const currentCart = loadCart() || [];
@@ -148,13 +154,14 @@ export default function Checkout() {
         try {
             if (token) {
                 // Real DB order creation
+                const giftNoteStr = isGift ? ` | Gift: ${giftWrappingType} (${giftMessage ? 'Msg: ' + giftMessage : 'No Msg'})` : '';
                 const orderData = {
                     name: `${firstName} ${lastName}`,
                     email: email,
                     address: `${address}, ${city}${zipCode ? ' - ' + zipCode : ''}`,
                     phone: parseInt(phone.replace(/\D/g,'')),
                     orderItems: cart,
-                    notes: `Shipping: ${shippingMethod} | Payment: ${paymentMethod}${paymentMethod === 'card' ? ' (' + cardType + ')' : ''}`
+                    notes: `Shipping: ${shippingMethod} | Payment: ${paymentMethod}${paymentMethod === 'card' ? ' (' + cardType + ')' : ''}${giftNoteStr}`
                 };
                 
                 const response = await axios.post(
@@ -367,6 +374,83 @@ export default function Checkout() {
                                             <span className="font-medium text-primary-dark dark:text-white">LKR 800.00</span>
                                         </div>
                                     </label>
+                                </div>
+
+                                {/* LUXURY GIFT PACKAGING OPTION */}
+                                <div className="mt-8 pt-8 border-t border-gray-100 dark:border-gray-800 space-y-4">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-2xl bg-rose-500/10 text-rose-500 flex items-center justify-center font-bold">
+                                                🎁
+                                            </div>
+                                            <div>
+                                                <h3 className="font-serif font-bold text-base text-primary-dark dark:text-white">Send as a Luxury Gift?</h3>
+                                                <p className="text-xs text-gray-500 dark:text-gray-400">Include signature aesthetic box wrapping & custom greeting card</p>
+                                            </div>
+                                        </div>
+                                        <label className="relative inline-flex items-center cursor-pointer">
+                                            <input 
+                                                type="checkbox" 
+                                                checked={isGift} 
+                                                onChange={(e) => setIsGift(e.target.checked)} 
+                                                className="sr-only peer"
+                                            />
+                                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-rose-500"></div>
+                                        </label>
+                                    </div>
+
+                                    {isGift && (
+                                        <motion.div
+                                            initial={{ opacity: 0, height: 0 }}
+                                            animate={{ opacity: 1, height: "auto" }}
+                                            exit={{ opacity: 0, height: 0 }}
+                                            className="p-6 rounded-2xl bg-rose-500/5 border border-rose-500/20 space-y-4 overflow-hidden"
+                                        >
+                                            <div>
+                                                <label className="block text-xs uppercase font-bold tracking-widest text-rose-600 dark:text-rose-400 mb-2">Select Packaging Style</label>
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                                    {[
+                                                        { id: "luxury_box", name: "Aura Signature Rose Gold Box", fee: "+ LKR 500" },
+                                                        { id: "velvet_pouch", name: "Velvet Drawstring Pouch", fee: "+ LKR 300" },
+                                                    ].map(wrap => (
+                                                        <div
+                                                            key={wrap.id}
+                                                            onClick={() => setGiftWrappingType(wrap.id)}
+                                                            className={`p-3.5 rounded-xl border text-xs font-semibold cursor-pointer transition-all flex items-center justify-between ${
+                                                                giftWrappingType === wrap.id 
+                                                                    ? "bg-rose-500 text-white border-rose-500 shadow-md" 
+                                                                    : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300"
+                                                            }`}
+                                                        >
+                                                            <span>{wrap.name}</span>
+                                                            <span className="opacity-80 font-normal">{wrap.fee}</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+
+                                            <div>
+                                                <label className="block text-xs uppercase font-bold tracking-widest text-rose-600 dark:text-rose-400 mb-1">Personalized Gift Message Card</label>
+                                                <textarea
+                                                    rows={2}
+                                                    value={giftMessage}
+                                                    onChange={e => setGiftMessage(e.target.value)}
+                                                    placeholder="Write your custom wish (e.g. Happy Birthday Sarah! Wishing you everlasting glow ✨)"
+                                                    className="w-full p-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-xs text-primary-dark dark:text-white focus:outline-none focus:border-rose-500"
+                                                />
+                                            </div>
+
+                                            <label className="flex items-center gap-2 text-xs font-medium text-gray-600 dark:text-gray-300 cursor-pointer">
+                                                <input 
+                                                    type="checkbox" 
+                                                    checked={hidePrice} 
+                                                    onChange={e => setHidePrice(e.target.checked)}
+                                                    className="accent-rose-500 cursor-pointer"
+                                                />
+                                                <span>Hide product prices on invoice (Gift Receipt Mode)</span>
+                                            </label>
+                                        </motion.div>
+                                    )}
                                 </div>
                             </div>
                             

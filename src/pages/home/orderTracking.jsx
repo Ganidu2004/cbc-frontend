@@ -19,7 +19,8 @@ import {
     FiBox,
     FiActivity,
     FiChevronRight,
-    FiCalendar
+    FiCalendar,
+    FiStar
 } from "react-icons/fi";
 import { addToCart } from "../../utils/cartFunction";
 
@@ -66,6 +67,7 @@ export default function OrderTracking() {
     const [loading, setLoading] = useState(false);
     const [userOrders, setUserOrders] = useState([]);
     const [activeTab, setActiveTab] = useState("orders"); // "orders", "details"
+    const [orderStatusFilter, setOrderStatusFilter] = useState("all"); // "all", "active", "completed", "cancelled"
 
     // Default mock processing orders for rich demonstration if backend has few records
     const fallbackOrders = [
@@ -116,7 +118,9 @@ export default function OrderTracking() {
                 headers: { Authorization: `Bearer ${token}` }
             })
             .then((res) => {
+                let ordersToStore = fallbackOrders;
                 if (Array.isArray(res.data) && res.data.length > 0) {
+                    ordersToStore = res.data;
                     setUserOrders(res.data);
                     if (!initialOrderId && res.data[0]?.orderId) {
                         setCurrentOrderId(res.data[0].orderId);
@@ -125,23 +129,21 @@ export default function OrderTracking() {
                 } else {
                     setUserOrders(fallbackOrders);
                 }
+                localStorage.setItem("aura_user_orders", JSON.stringify(ordersToStore));
+                window.dispatchEvent(new Event("aura_orders_updated"));
             })
             .catch(err => {
                 console.error("Error fetching user orders list:", err);
                 setUserOrders(fallbackOrders);
+                localStorage.setItem("aura_user_orders", JSON.stringify(fallbackOrders));
+                window.dispatchEvent(new Event("aura_orders_updated"));
             });
         } else {
             setUserOrders(fallbackOrders);
+            localStorage.setItem("aura_user_orders", JSON.stringify(fallbackOrders));
+            window.dispatchEvent(new Event("aura_orders_updated"));
         }
     }, []);
-
-    // Filter active orders — use real data if available, else fallback
-    const displayProcessingList = userOrders.length > 0 
-        ? userOrders.filter(o => o.status === "Processing" || o.status === "Preparing" || o.status === "Shipped") 
-        : fallbackOrders;
-    
-    const displayCompletedList = userOrders.filter(o => o.status === "Delivered");
-    const displayCancelledList = userOrders.filter(o => o.status === "Cancelled");
 
     // Fetch specific order details (always from real API)
     useEffect(() => {
@@ -318,6 +320,11 @@ export default function OrderTracking() {
         }
     };
 
+    const allOrdersList = userOrders.length > 0 ? userOrders : fallbackOrders;
+    const displayProcessingList = allOrdersList.filter(o => o.status !== "Completed" && o.status !== "Delivered" && o.status !== "Cancelled");
+    const displayCompletedList = allOrdersList.filter(o => o.status === "Completed" || o.status === "Delivered");
+    const displayCancelledList = allOrdersList.filter(o => o.status === "Cancelled");
+
     const renderOrderCard = (procOrder, idx) => {
         const procSubtotal = procOrder.orderItems?.reduce((acc, i) => acc + (i.price * (i.quentity || i.quantity || 1)), 0) || 0;
         const procShipping = procOrder.notes?.toLowerCase().includes("express") ? 800 : 400;
@@ -379,20 +386,32 @@ export default function OrderTracking() {
                     </div>
                 </div>
 
-                {/* PRODUCTS PREVIEW */}
+                {/* PRODUCTS PREVIEW & REVIEW ACTION */}
                 <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-gray-100 dark:border-gray-800 text-xs">
                     <div className="flex items-center gap-3 overflow-x-auto py-1">
-                        {procOrder.orderItems?.map((item, idx) => (
-                            <div key={idx} className="flex items-center gap-2 bg-gray-50 dark:bg-gray-800/60 px-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-700 shrink-0">
-                                {item.image && (
-                                    <img src={item.image} alt={item.name} className="w-6 h-6 rounded-md object-cover" />
-                                )}
-                                <span className="font-medium text-gray-700 dark:text-gray-300 truncate max-w-[140px] sm:max-w-[180px]">
-                                    {item.name}
-                                </span>
-                                <span className="text-gray-400 font-bold">x{item.quentity || item.quantity || 1}</span>
-                            </div>
-                        ))}
+                        {procOrder.orderItems?.map((item, idx) => {
+                            const isDeliveredOrCompleted = ['completed', 'delivered'].includes(String(procOrder.status || '').toLowerCase());
+                            return (
+                                <div key={idx} className="flex items-center gap-2 bg-gray-50 dark:bg-gray-800/60 px-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-700 shrink-0">
+                                    {item.image && (
+                                        <img src={item.image} alt={item.name} className="w-6 h-6 rounded-md object-cover" />
+                                    )}
+                                    <span className="font-medium text-gray-700 dark:text-gray-300 truncate max-w-[140px] sm:max-w-[180px]">
+                                        {item.name}
+                                    </span>
+                                    <span className="text-gray-400 font-bold">x{item.quentity || item.quantity || 1}</span>
+
+                                    {isDeliveredOrCompleted && (
+                                        <Link
+                                            to={`/productInfo/${item.productId || item._id || item.id || 'PROD-1'}`}
+                                            className="ml-2 px-2.5 py-1 bg-amber-500/10 hover:bg-amber-500 text-amber-600 hover:text-white rounded-lg font-bold text-[10px] uppercase tracking-wider transition-all flex items-center gap-1 cursor-pointer border border-amber-500/30"
+                                        >
+                                            <FiStar size={10} className="fill-current" /> Write Review
+                                        </Link>
+                                    )}
+                                </div>
+                            );
+                        })}
                     </div>
 
                     <Link 
@@ -492,15 +511,44 @@ export default function OrderTracking() {
 
                 </div>
 
-                {/* ORDER LISTS SECTION */}`
+                {/* ORDER LISTS SECTION */}
                 {activeTab === "orders" && (
                     <div className="space-y-12">
+                        {/* Status Filter Sub-Tabs */}
+                        <div className="flex flex-wrap items-center gap-3 bg-white dark:bg-[#181820]/90 p-3 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm">
+                            {[
+                                { id: "all", label: "All Orders", count: allOrdersList.length, icon: FiPackage },
+                                { id: "active", label: "Active / Processing", count: displayProcessingList.length, icon: FiActivity, color: "text-amber-500" },
+                                { id: "completed", label: "Completed", count: displayCompletedList.length, icon: FiCheckCircle, color: "text-emerald-500" },
+                                { id: "cancelled", label: "Cancelled", count: displayCancelledList.length, icon: FiPackage, color: "text-rose-500" },
+                            ].map(tab => {
+                                const Icon = tab.icon;
+                                const isSelected = orderStatusFilter === tab.id;
+                                return (
+                                    <button
+                                        key={tab.id}
+                                        onClick={() => setOrderStatusFilter(tab.id)}
+                                        className={`px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2 cursor-pointer ${
+                                            isSelected 
+                                                ? "bg-primary-dark dark:bg-accent text-white shadow-md scale-105" 
+                                                : "bg-gray-50 dark:bg-gray-800/60 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                        }`}
+                                    >
+                                        <Icon className={isSelected ? "text-white" : (tab.color || "")} size={14} />
+                                        <span>{tab.label}</span>
+                                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${isSelected ? "bg-white/20 text-white" : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300"}`}>
+                                            {tab.count}
+                                        </span>
+                                    </button>
+                                );
+                            })}
+                        </div>
                         
-                        {displayProcessingList.length > 0 && (
+                        {(orderStatusFilter === "all" || orderStatusFilter === "active") && displayProcessingList.length > 0 && (
                             <div className="space-y-6">
                                 <div className="flex items-center justify-between">
                                     <h2 className="font-serif text-2xl font-bold text-primary-dark dark:text-white flex items-center gap-2">
-                                        <FiActivity className="text-accent animate-pulse" /> Active & Processing Orders
+                                        <FiActivity className="text-amber-500 animate-pulse" /> Active & Processing Orders
                                     </h2>
                                     <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">
                                         {displayProcessingList.length} Orders
@@ -512,7 +560,7 @@ export default function OrderTracking() {
                             </div>
                         )}
 
-                        {displayCompletedList.length > 0 && (
+                        {(orderStatusFilter === "all" || orderStatusFilter === "completed") && displayCompletedList.length > 0 && (
                             <div className="space-y-6">
                                 <div className="flex items-center justify-between">
                                     <h2 className="font-serif text-2xl font-bold text-primary-dark dark:text-white flex items-center gap-2">
@@ -528,7 +576,7 @@ export default function OrderTracking() {
                             </div>
                         )}
 
-                        {displayCancelledList.length > 0 && (
+                        {(orderStatusFilter === "all" || orderStatusFilter === "cancelled") && displayCancelledList.length > 0 && (
                             <div className="space-y-6">
                                 <div className="flex items-center justify-between">
                                     <h2 className="font-serif text-2xl font-bold text-primary-dark dark:text-white flex items-center gap-2">
@@ -544,11 +592,14 @@ export default function OrderTracking() {
                             </div>
                         )}
 
-                        {displayProcessingList.length === 0 && displayCompletedList.length === 0 && displayCancelledList.length === 0 && (
+                        {((orderStatusFilter === "active" && displayProcessingList.length === 0) ||
+                          (orderStatusFilter === "completed" && displayCompletedList.length === 0) ||
+                          (orderStatusFilter === "cancelled" && displayCancelledList.length === 0) ||
+                          (displayProcessingList.length === 0 && displayCompletedList.length === 0 && displayCancelledList.length === 0)) && (
                             <div className="text-center py-16 bg-white dark:bg-[#181820]/90 backdrop-blur-xl rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm">
                                 <FiBox className="mx-auto text-4xl text-gray-300 dark:text-gray-600 mb-4" />
-                                <h3 className="text-lg font-serif font-bold text-primary-dark dark:text-white">No Orders Found</h3>
-                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">You haven't placed any orders yet.</p>
+                                <h3 className="text-lg font-serif font-bold text-primary-dark dark:text-white">No {orderStatusFilter !== "all" ? orderStatusFilter.toUpperCase() : ""} Orders Found</h3>
+                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">There are no orders matching this filter.</p>
                                 <Link to="/product" className="inline-block mt-6 px-6 py-2.5 bg-primary-dark dark:bg-accent text-white rounded-full text-xs font-bold uppercase tracking-widest hover:bg-black dark:hover:bg-accent/80 transition-all">Start Shopping</Link>
                             </div>
                         )}
