@@ -1,33 +1,64 @@
 /**
- * Legacy Cart Utility Facade
- * Refactored to delegate call execution to Clean Architecture Domain Use Cases & Repositories.
+ * Cart Utility Functions
+ * Synchronously manages cart state in localStorage and dispatches window events for real-time UI updates.
  */
-import { defaultCartRepository } from '../features/cart/adapters/repositories/LocalStorageCartRepository';
-import { AddToCartUseCase } from '../features/cart/usecases/AddToCartUseCase';
-import { RemoveFromCartUseCase, ClearCartUseCase } from '../features/cart/usecases/CartUseCases';
-
-const addToCartUseCase = new AddToCartUseCase(defaultCartRepository);
-const removeFromCartUseCase = new RemoveFromCartUseCase(defaultCartRepository);
-const clearCartUseCase = new ClearCartUseCase(defaultCartRepository);
 
 export function loadCart() {
-  const raw = localStorage.getItem('cart');
-  return raw ? JSON.parse(raw) : [];
+  try {
+    const raw = localStorage.getItem('cart');
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (e) {
+    console.error("Error reading cart from localStorage", e);
+    return [];
+  }
 }
 
 export function saveCart(cart) {
-  localStorage.setItem('cart', JSON.stringify(cart));
+  try {
+    localStorage.setItem('cart', JSON.stringify(cart));
+    window.dispatchEvent(new Event("aura_cart_updated"));
+  } catch (e) {
+    console.error("Error saving cart to localStorage", e);
+  }
 }
 
-export async function addToCart(productId, qty) {
-  const payload = typeof productId === 'object' ? productId : { productId, qty };
-  await addToCartUseCase.execute(payload);
+export function addToCart(productId, qty = 1) {
+  const targetId = typeof productId === 'object' ? (productId.productId || productId._id || productId.id) : productId;
+  const targetQty = typeof productId === 'object' ? (productId.qty || 1) : qty;
+
+  if (!targetId) return;
+
+  const currentCart = loadCart();
+  const existingIndex = currentCart.findIndex((item) => item.productId === targetId);
+
+  if (existingIndex > -1) {
+    const newQty = (currentCart[existingIndex].qty || 1) + targetQty;
+    if (newQty <= 0) {
+      currentCart.splice(existingIndex, 1);
+    } else {
+      currentCart[existingIndex].qty = newQty;
+    }
+  } else {
+    if (targetQty > 0) {
+      currentCart.push({ productId: targetId, qty: targetQty });
+    }
+  }
+
+  saveCart(currentCart);
 }
 
-export async function clearCart() {
-  await clearCartUseCase.execute();
+export function clearCart() {
+  localStorage.removeItem('cart');
+  window.dispatchEvent(new Event("aura_cart_updated"));
 }
 
-export async function deleteItem(productId) {
-  await removeFromCartUseCase.execute(productId);
+export function deleteItem(productId) {
+  const targetId = typeof productId === 'object' ? (productId.productId || productId._id || productId.id) : productId;
+  if (!targetId) return;
+
+  const currentCart = loadCart();
+  const updatedCart = currentCart.filter((item) => item.productId !== targetId);
+  saveCart(updatedCart);
 }

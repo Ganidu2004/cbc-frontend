@@ -75,9 +75,9 @@ export default function CartCard(props) {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: isRemoving ? 0 : 1, x: isRemoving ? -50 : 0 }}
       transition={{ duration: 0.3 }}
-      className="flex flex-col sm:flex-row items-center gap-6 p-4 rounded-2xl hover:bg-gray-50/50 transition-colors group relative"
+      className="flex flex-col sm:flex-row items-center gap-6 p-4 rounded-2xl hover:bg-gray-50/50 dark:hover:bg-gray-800/40 transition-colors group relative"
     >
-      <div className="w-full sm:w-28 h-36 bg-gray-50 rounded-xl overflow-hidden relative shadow-inner">
+      <div className="w-full sm:w-28 h-36 bg-gray-50 dark:bg-gray-800 rounded-xl overflow-hidden relative shadow-inner">
         <img
           src={product?.images?.[0] || 'https://images.unsplash.com/photo-1631214500115-598fc2cb8d2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80'}
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
@@ -88,13 +88,13 @@ export default function CartCard(props) {
       <div className="flex-1 flex flex-col justify-between w-full h-full py-2">
         <div className="flex justify-between items-start">
             <div>
-                <h2 className="font-serif text-xl font-medium text-primary-dark mb-1 group-hover:text-accent transition-colors">{product.productName}</h2>
-                <p className="text-xs text-gray-400 uppercase tracking-widest mb-4">Ref: {productId.substring(0, 8)}</p>
+                <h2 className="font-serif text-xl font-medium text-primary-dark dark:text-white mb-1 group-hover:text-accent transition-colors">{product.productName}</h2>
+                <p className="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-4">Ref: {productId.substring(0, 8)}</p>
             </div>
             <button 
               onClick={handleRemove}
               disabled={isRemoving}
-              className="text-gray-300 hover:text-red-500 transition-colors p-2 bg-white hover:bg-red-50 rounded-full shadow-sm hover:shadow"
+              className="text-gray-400 hover:text-red-500 transition-colors p-2 bg-white dark:bg-gray-800 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-full shadow-sm hover:shadow cursor-pointer"
               title="Remove Item"
             >
               <FiTrash2 size={16} /> 
@@ -102,28 +102,28 @@ export default function CartCard(props) {
         </div>
         
         <div className="flex items-end justify-between mt-auto">
-            <div className="flex items-center bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+            <div className="flex items-center bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm overflow-hidden">
                 <button 
                   onClick={() => handleQuantityChange(-1)} 
                   disabled={isRemoving}
-                  className="px-3 py-2 hover:bg-gray-50 text-gray-400 hover:text-primary-dark transition-colors disabled:opacity-50"
+                  className="px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-400 dark:text-gray-300 hover:text-primary-dark dark:hover:text-white transition-colors disabled:opacity-50 cursor-pointer"
                 >
                     <FiMinus size={14} />
                 </button>
-                <span className="px-4 py-2 text-sm font-medium text-primary-dark border-x border-gray-100">{qty}</span>
+                <span className="px-4 py-2 text-sm font-medium text-primary-dark dark:text-white border-x border-gray-100 dark:border-gray-700">{qty}</span>
                 <button 
                   onClick={() => handleQuantityChange(1)} 
                   disabled={isRemoving}
-                  className="px-3 py-2 hover:bg-gray-50 text-gray-400 hover:text-primary-dark transition-colors disabled:opacity-50"
+                  className="px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-400 dark:text-gray-300 hover:text-primary-dark dark:hover:text-white transition-colors disabled:opacity-50 cursor-pointer"
                 >
                     <FiPlus size={14} />
                 </button>
             </div>
 
             <div className="text-right">
-                <p className="text-xl font-medium text-primary-dark">LKR {((product?.lastPrice || 0) * qty).toFixed(2)}</p>
+                <p className="text-xl font-medium text-primary-dark dark:text-white">LKR {((product?.lastPrice || 0) * qty).toFixed(2)}</p>
                 {qty > 1 && (
-                    <p className="text-xs text-gray-400">LKR {(product?.lastPrice || 0).toFixed(2)} each</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500">LKR {(product?.lastPrice || 0).toFixed(2)} each</p>
                 )}
             </div>
         </div>

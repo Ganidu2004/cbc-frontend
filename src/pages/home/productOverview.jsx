@@ -98,41 +98,41 @@ export default function ProductOverview(){
                     <div className="mb-3 text-xs uppercase tracking-widest text-accent font-bold">
                         {product.altName?.join(" • ") || "Foundation"}
                     </div>
-                    <h1 className="text-4xl md:text-5xl font-serif text-primary-dark font-medium mb-4 leading-tight">
+                    <h1 className="text-4xl md:text-5xl font-serif text-primary-dark dark:text-white font-medium mb-4 leading-tight">
                         {product.productName}
                     </h1>
                     
                     <div className="flex items-center gap-4 mb-6">
                         {product.price > product.lastPrice && (
-                            <span className="text-xl line-through text-gray-400">LKR.{product.price}</span>
+                            <span className="text-xl line-through text-gray-400 dark:text-gray-500">LKR.{product.price}</span>
                         )}
-                        <span className="text-3xl font-semibold text-primary-dark">LKR.{product.lastPrice}</span>
+                        <span className="text-3xl font-semibold text-primary-dark dark:text-white">LKR.{product.lastPrice}</span>
                     </div>
 
                     <div className="flex gap-4 mb-8">
-                        <div className="flex items-center gap-2 bg-green-50 text-green-700 px-3 py-1.5 rounded-full text-xs font-medium">
+                        <div className="flex items-center gap-2 bg-green-50 dark:bg-green-950/50 text-green-700 dark:text-green-400 border border-transparent dark:border-green-800/50 px-3 py-1.5 rounded-full text-xs font-medium">
                             <FiCheckCircle /> Vegan
                         </div>
-                        <div className="flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1.5 rounded-full text-xs font-medium">
+                        <div className="flex items-center gap-2 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-400 border border-transparent dark:border-blue-800/50 px-3 py-1.5 rounded-full text-xs font-medium">
                             <FiShield /> Cruelty Free
                         </div>
                     </div>
 
                     <div className="flex flex-col gap-6 mb-10">
                         <div className="flex items-center gap-4">
-                            <div className="flex items-center border border-gray-300 rounded-md overflow-hidden h-12 w-32">
+                            <div className="flex items-center border border-gray-300 dark:border-gray-700 rounded-md overflow-hidden h-12 w-32 bg-white dark:bg-gray-800">
                                 <button 
                                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                                    className="w-10 h-full flex items-center justify-center bg-gray-50 hover:bg-gray-100 text-gray-600 transition-colors outline-none"
+                                    className="w-10 h-full flex items-center justify-center bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-200 transition-colors outline-none cursor-pointer"
                                 >
                                     <FiMinus />
                                 </button>
-                                <div className="flex-1 h-full flex items-center justify-center font-medium text-primary-dark border-x border-gray-300">
+                                <div className="flex-1 h-full flex items-center justify-center font-medium text-primary-dark dark:text-white border-x border-gray-300 dark:border-gray-700">
                                     {quantity}
                                 </div>
                                 <button 
                                     onClick={() => setQuantity(quantity + 1)}
-                                    className="w-10 h-full flex items-center justify-center bg-gray-50 hover:bg-gray-100 text-gray-600 transition-colors outline-none"
+                                    className="w-10 h-full flex items-center justify-center bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-200 transition-colors outline-none cursor-pointer"
                                 >
                                     <FiPlus />
                                 </button>
@@ -140,7 +140,7 @@ export default function ProductOverview(){
                             
                             <button 
                                 onClick={onAddToCartClick} 
-                                className="flex-1 bg-primary-dark text-white h-12 uppercase tracking-widest text-sm font-medium hover:bg-black transition-colors shadow-lg rounded-md"
+                                className="flex-1 bg-primary-dark dark:bg-accent text-white h-12 uppercase tracking-widest text-sm font-bold hover:bg-black dark:hover:bg-accent/80 transition-all shadow-lg hover:shadow-xl rounded-md cursor-pointer flex items-center justify-center gap-2"
                             >
                                 Add to Cart
                             </button>
@@ -149,12 +149,12 @@ export default function ProductOverview(){
                     </div>
 
                     {/* Accordion Section */}
-                    <div className="border-t border-gray-200 divide-y divide-gray-200 mt-auto">
+                    <div className="border-t border-gray-200 dark:border-gray-800 divide-y divide-gray-200 dark:divide-gray-800 mt-auto">
                         {/* Description */}
                         <div className="py-4">
                             <button 
                                 onClick={() => setActiveAccordion(activeAccordion === 'description' ? '' : 'description')}
-                                className="flex justify-between items-center w-full text-left font-serif text-lg text-primary-dark outline-none"
+                                className="flex justify-between items-center w-full text-left font-serif text-lg text-primary-dark dark:text-white outline-none cursor-pointer"
                             >
                                 <span>Description</span>
                                 {activeAccordion === 'description' ? <FiChevronUp /> : <FiChevronDown />}
@@ -167,7 +167,7 @@ export default function ProductOverview(){
                                         exit={{ height: 0, opacity: 0 }}
                                         className="overflow-hidden"
                                     >
-                                        <p className="text-gray-600 leading-relaxed pt-4 font-light text-sm">
+                                        <p className="text-gray-600 dark:text-gray-300 leading-relaxed pt-4 font-light text-sm">
                                             {product.description}
                                         </p>
                                     </motion.div>
@@ -179,7 +179,7 @@ export default function ProductOverview(){
                         <div className="py-4">
                             <button 
                                 onClick={() => setActiveAccordion(activeAccordion === 'howtouse' ? '' : 'howtouse')}
-                                className="flex justify-between items-center w-full text-left font-serif text-lg text-primary-dark outline-none"
+                                className="flex justify-between items-center w-full text-left font-serif text-lg text-primary-dark dark:text-white outline-none cursor-pointer"
                             >
                                 <span>How to Use</span>
                                 {activeAccordion === 'howtouse' ? <FiChevronUp /> : <FiChevronDown />}
@@ -192,7 +192,7 @@ export default function ProductOverview(){
                                         exit={{ height: 0, opacity: 0 }}
                                         className="overflow-hidden"
                                     >
-                                        <p className="text-gray-600 leading-relaxed pt-4 font-light text-sm">
+                                        <p className="text-gray-600 dark:text-gray-300 leading-relaxed pt-4 font-light text-sm">
                                             Apply a small amount to the back of your hand. Use a brush or sponge to blend into the skin, starting from the center of the face and working outwards. Build coverage as desired.
                                         </p>
                                     </motion.div>
@@ -204,7 +204,7 @@ export default function ProductOverview(){
                         <div className="py-4">
                             <button 
                                 onClick={() => setActiveAccordion(activeAccordion === 'ingredients' ? '' : 'ingredients')}
-                                className="flex justify-between items-center w-full text-left font-serif text-lg text-primary-dark outline-none"
+                                className="flex justify-between items-center w-full text-left font-serif text-lg text-primary-dark dark:text-white outline-none cursor-pointer"
                             >
                                 <span>Ingredients</span>
                                 {activeAccordion === 'ingredients' ? <FiChevronUp /> : <FiChevronDown />}
@@ -217,7 +217,7 @@ export default function ProductOverview(){
                                         exit={{ height: 0, opacity: 0 }}
                                         className="overflow-hidden"
                                     >
-                                        <p className="text-gray-600 leading-relaxed pt-4 font-light text-sm">
+                                        <p className="text-gray-600 dark:text-gray-300 leading-relaxed pt-4 font-light text-sm">
                                             Aqua / Water, Cyclopentasiloxane, Glycerin, Isododecane, Alcohol Denat., Polyglyceryl-4 Isostearate, Cetyl Peg/Ppg-10/1 Dimethicone, Hexyl Laurate, Aluminum Starch Octenylsuccinate, Disteardimonium Hectorite, Phenoxyethanol.
                                         </p>
                                     </motion.div>

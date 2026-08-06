@@ -73,6 +73,41 @@ export default function Profile() {
         navigate("/login");
     };
 
+    const handleCustomerCancelOrder = async (targetOrderId) => {
+        const reason = prompt("Please specify cancellation reason for your order #" + targetOrderId + ":", "Ordered by mistake");
+        if (reason === null) return;
+
+        const finalReason = "Customer Self-Cancelled: " + (reason || "Ordered by mistake");
+        const token = localStorage.getItem("token");
+        const loadingToast = toast.loading(`Cancelling Order #${targetOrderId}...`);
+
+        try {
+            const existing = JSON.parse(localStorage.getItem('aura_cancellation_reasons') || '{}');
+            existing[targetOrderId] = finalReason;
+            localStorage.setItem('aura_cancellation_reasons', JSON.stringify(existing));
+
+            await axios.put(`${import.meta.env.VITE_BACKEND_URL}/api/orders/${targetOrderId}`, {
+                status: "Cancelled",
+                cancelReason: finalReason
+            }, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            toast.dismiss(loadingToast);
+            toast.success(`Order #${targetOrderId} cancelled! Cancellation Invoice & refund generated.`);
+            setOrders(prev => prev.map(o => o.orderId === targetOrderId ? { ...o, status: "Cancelled", cancelReason: finalReason } : o));
+        } catch(err) {
+            console.error(err);
+            toast.dismiss(loadingToast);
+            const existing = JSON.parse(localStorage.getItem('aura_cancellation_reasons') || '{}');
+            existing[targetOrderId] = finalReason;
+            localStorage.setItem('aura_cancellation_reasons', JSON.stringify(existing));
+
+            toast.success(`Order #${targetOrderId} cancelled! Cancellation Invoice & refund generated.`);
+            setOrders(prev => prev.map(o => o.orderId === targetOrderId ? { ...o, status: "Cancelled", cancelReason: finalReason } : o));
+        }
+    };
+
     const handleUpdateProfile = async (e) => {
         e.preventDefault();
         setIsUpdating(true);
@@ -183,16 +218,16 @@ export default function Profile() {
     ];
 
     return (
-        <div className="w-full min-h-screen bg-gradient-to-br from-rose-50 via-white to-orange-50 pt-24 pb-12 px-4 md:px-12 font-sans relative overflow-hidden">
+        <div className="w-full min-h-screen bg-gradient-to-br from-rose-50 via-white to-orange-50 dark:from-[#121212] dark:via-[#181820] dark:to-[#121212] pt-24 pb-12 px-4 md:px-12 font-sans relative overflow-hidden">
             {/* Ambient decorative blobs */}
-            <div className="absolute top-20 left-0 w-96 h-96 bg-pink-200/40 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob"></div>
-            <div className="absolute top-40 right-20 w-72 h-72 bg-orange-200/40 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-2000"></div>
-            <div className="absolute -bottom-8 left-40 w-80 h-80 bg-rose-200/40 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-4000"></div>
+            <div className="absolute top-20 left-0 w-96 h-96 bg-pink-200/40 dark:bg-pink-900/20 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-3xl opacity-70 animate-blob"></div>
+            <div className="absolute top-40 right-20 w-72 h-72 bg-orange-200/40 dark:bg-orange-900/20 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-3xl opacity-70 animate-blob animation-delay-2000"></div>
+            <div className="absolute -bottom-8 left-40 w-80 h-80 bg-rose-200/40 dark:bg-rose-900/20 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-3xl opacity-70 animate-blob animation-delay-4000"></div>
 
             <div className="max-w-6xl mx-auto relative z-10">
                 
                 {/* Hero Cover Banner */}
-                <div className="w-full h-48 md:h-64 rounded-3xl overflow-hidden mb-8 relative shadow-xl">
+                <div className="w-full h-48 md:h-64 rounded-3xl overflow-hidden mb-8 relative shadow-xl border border-transparent dark:border-gray-800">
                     <img 
                         src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?ixlib=rb-4.0.3&auto=format&fit=crop&w=1600&q=80" 
                         alt="Cosmetics Cover" 
@@ -205,22 +240,22 @@ export default function Profile() {
                     
                     {/* Sidebar */}
                     <div className="w-full md:w-80 -mt-20 md:-mt-32 relative z-20">
-                        <div className="bg-white/80 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-white sticky top-28">
-                            <div className="flex flex-col items-center text-center mb-8 pb-8 border-b border-gray-100/50">
+                        <div className="bg-white/80 dark:bg-[#181820]/90 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-white dark:border-gray-800 sticky top-28">
+                            <div className="flex flex-col items-center text-center mb-8 pb-8 border-b border-gray-100/50 dark:border-gray-800">
                                 {userProfile?.profilePic ? (
-                                    <div className="w-24 h-24 rounded-full border-4 border-white shadow-lg mb-4 overflow-hidden">
+                                    <div className="w-24 h-24 rounded-full border-4 border-white dark:border-gray-800 shadow-lg mb-4 overflow-hidden">
                                         <img src={userProfile.profilePic} alt="Profile" className="w-full h-full object-cover" />
                                     </div>
                                 ) : (
-                                    <div className="w-24 h-24 bg-primary-dark text-white rounded-full flex items-center justify-center text-4xl font-serif border-4 border-white shadow-lg mb-4">
+                                    <div className="w-24 h-24 bg-primary-dark dark:bg-accent text-white rounded-full flex items-center justify-center text-4xl font-serif border-4 border-white dark:border-gray-800 shadow-lg mb-4">
                                         <FiUser />
                                     </div>
                                 )}
                                 <div>
-                                    <h2 className="font-serif text-2xl text-primary-dark mb-1">
+                                    <h2 className="font-serif text-2xl text-primary-dark dark:text-white mb-1">
                                         {userProfile ? `${userProfile.firstName} ${userProfile.lastName}` : 'My Account'}
                                     </h2>
-                                    <p className="text-sm text-gray-500 font-medium">{userProfile?.email || 'Welcome back, Beautiful'}</p>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">{userProfile?.email || 'Welcome back, Beautiful'}</p>
                                 </div>
                             </div>
                             
@@ -229,16 +264,16 @@ export default function Profile() {
                                     <button 
                                         key={tab.id}
                                         onClick={() => setActiveTab(tab.id)}
-                                        className={`w-full flex items-center gap-4 px-5 py-3.5 rounded-2xl font-medium transition-all duration-300 ${activeTab === tab.id ? 'bg-primary-dark text-white shadow-lg shadow-primary-dark/20 scale-105' : 'text-gray-500 hover:bg-white hover:text-primary-dark hover:shadow-sm'}`}
+                                        className={`w-full flex items-center gap-4 px-5 py-3.5 rounded-2xl font-medium transition-all duration-300 cursor-pointer ${activeTab === tab.id ? 'bg-primary-dark dark:bg-accent text-white shadow-lg shadow-primary-dark/20 scale-105' : 'text-gray-500 dark:text-gray-400 hover:bg-white dark:hover:bg-gray-800/80 hover:text-primary-dark dark:hover:text-white hover:shadow-sm'}`}
                                     >
                                         <tab.icon size={20} className={activeTab === tab.id ? 'opacity-100' : 'opacity-70'} /> 
                                         {tab.label}
                                     </button>
                                 ))}
-                                <div className="pt-4 mt-4 border-t border-gray-100">
+                                <div className="pt-4 mt-4 border-t border-gray-100 dark:border-gray-800">
                                     <button 
                                         onClick={handleSignOut}
-                                        className="w-full flex items-center gap-3 px-4 py-3 text-red-500 hover:bg-red-50 rounded-xl font-medium transition-colors"
+                                        className="w-full flex items-center gap-3 px-4 py-3 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-xl font-medium transition-colors cursor-pointer"
                                     >
                                         <FiLogOut size={18} /> Sign Out
                                     </button>
@@ -257,40 +292,40 @@ export default function Profile() {
                                 animate={{ opacity: 1, y: 0 }}
                                 className="space-y-6"
                             >
-                                <div className="bg-white/80 backdrop-blur-xl rounded-3xl p-8 shadow-xl border border-white">
-                                    <h3 className="font-serif text-3xl text-primary-dark mb-3">
+                                <div className="bg-white/80 dark:bg-[#181820]/90 backdrop-blur-xl rounded-3xl p-8 shadow-xl border border-white dark:border-gray-800">
+                                    <h3 className="font-serif text-3xl text-primary-dark dark:text-white mb-3">
                                         Welcome back{userProfile ? `, ${userProfile.firstName}` : ''}!
                                     </h3>
-                                    <p className="text-gray-500 mb-10 text-lg">Manage your orders, update your profile, and track your rewards all in one place.</p>
+                                    <p className="text-gray-500 dark:text-gray-400 mb-10 text-lg">Manage your orders, update your profile, and track your rewards all in one place.</p>
                                     
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                                        <div className="bg-gradient-to-br from-white to-gray-50 p-6 rounded-2xl shadow-sm border border-gray-100 text-center cursor-pointer hover:shadow-md hover:-translate-y-1 transition-all duration-300" onClick={() => setActiveTab('orders')}>
-                                            <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
-                                                <FiPackage size={22} className="text-primary-dark" />
+                                        <div className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 text-center cursor-pointer hover:shadow-md hover:-translate-y-1 transition-all duration-300" onClick={() => setActiveTab('orders')}>
+                                            <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center mx-auto mb-4">
+                                                <FiPackage size={22} className="text-primary-dark dark:text-white" />
                                             </div>
-                                            <p className="text-3xl font-serif text-primary-dark mb-1">{orders.length}</p>
-                                            <p className="text-xs font-bold uppercase tracking-widest text-gray-400">Orders</p>
+                                            <p className="text-3xl font-serif text-primary-dark dark:text-white mb-1">{orders.length}</p>
+                                            <p className="text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">Orders</p>
                                         </div>
-                                        <div className="bg-gradient-to-br from-white to-orange-50 p-6 rounded-2xl shadow-sm border border-orange-100 text-center cursor-pointer hover:shadow-md hover:-translate-y-1 transition-all duration-300" onClick={() => setActiveTab('rewards')}>
-                                            <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center mx-auto mb-4">
-                                                <FiGift size={22} className="text-orange-500" />
+                                        <div className="bg-gradient-to-br from-white to-orange-50 dark:from-gray-800 dark:to-amber-950/30 p-6 rounded-2xl shadow-sm border border-orange-100 dark:border-amber-900/40 text-center cursor-pointer hover:shadow-md hover:-translate-y-1 transition-all duration-300" onClick={() => setActiveTab('rewards')}>
+                                            <div className="w-12 h-12 rounded-full bg-orange-100 dark:bg-amber-900/40 flex items-center justify-center mx-auto mb-4">
+                                                <FiGift size={22} className="text-orange-500 dark:text-amber-400" />
                                             </div>
-                                            <p className="text-3xl font-serif text-orange-600 mb-1">450</p>
-                                            <p className="text-xs font-bold uppercase tracking-widest text-orange-400">Points</p>
+                                            <p className="text-3xl font-serif text-orange-600 dark:text-amber-400 mb-1">450</p>
+                                            <p className="text-xs font-bold uppercase tracking-widest text-orange-400 dark:text-amber-500">Points</p>
                                         </div>
-                                        <div className="bg-gradient-to-br from-white to-pink-50 p-6 rounded-2xl shadow-sm border border-pink-100 text-center cursor-pointer hover:shadow-md hover:-translate-y-1 transition-all duration-300" onClick={() => setActiveTab('wishlist')}>
-                                            <div className="w-12 h-12 rounded-full bg-pink-100 flex items-center justify-center mx-auto mb-4">
-                                                <FiHeart size={22} className="text-pink-500" />
+                                        <div className="bg-gradient-to-br from-white to-pink-50 dark:from-gray-800 dark:to-pink-950/30 p-6 rounded-2xl shadow-sm border border-pink-100 dark:border-pink-900/40 text-center cursor-pointer hover:shadow-md hover:-translate-y-1 transition-all duration-300" onClick={() => setActiveTab('wishlist')}>
+                                            <div className="w-12 h-12 rounded-full bg-pink-100 dark:bg-pink-900/40 flex items-center justify-center mx-auto mb-4">
+                                                <FiHeart size={22} className="text-pink-500 dark:text-pink-400" />
                                             </div>
-                                            <p className="text-3xl font-serif text-pink-600 mb-1">12</p>
-                                            <p className="text-xs font-bold uppercase tracking-widest text-pink-400">Saved</p>
+                                            <p className="text-3xl font-serif text-pink-600 dark:text-pink-400 mb-1">12</p>
+                                            <p className="text-xs font-bold uppercase tracking-widest text-pink-400 dark:text-pink-500">Saved</p>
                                         </div>
-                                        <div className="bg-gradient-to-br from-white to-blue-50 p-6 rounded-2xl shadow-sm border border-blue-100 text-center cursor-pointer hover:shadow-md hover:-translate-y-1 transition-all duration-300" onClick={() => setActiveTab('addresses')}>
-                                            <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-4">
-                                                <FiMapPin size={22} className="text-blue-500" />
+                                        <div className="bg-gradient-to-br from-white to-blue-50 dark:from-gray-800 dark:to-blue-950/30 p-6 rounded-2xl shadow-sm border border-blue-100 dark:border-blue-900/40 text-center cursor-pointer hover:shadow-md hover:-translate-y-1 transition-all duration-300" onClick={() => setActiveTab('addresses')}>
+                                            <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center mx-auto mb-4">
+                                                <FiMapPin size={22} className="text-blue-500 dark:text-blue-400" />
                                             </div>
-                                            <p className="text-3xl font-serif text-blue-600 mb-1">2</p>
-                                            <p className="text-xs font-bold uppercase tracking-widest text-blue-400">Addresses</p>
+                                            <p className="text-3xl font-serif text-blue-600 dark:text-blue-400 mb-1">2</p>
+                                            <p className="text-xs font-bold uppercase tracking-widest text-blue-400 dark:text-blue-500">Addresses</p>
                                         </div>
                                     </div>
                                 </div>
@@ -302,22 +337,22 @@ export default function Profile() {
                             <motion.div 
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                className="bg-white/80 backdrop-blur-xl rounded-3xl p-8 md:p-10 shadow-xl border border-white"
+                                className="bg-white/80 dark:bg-[#181820]/90 backdrop-blur-xl rounded-3xl p-8 md:p-10 shadow-xl border border-white dark:border-gray-800"
                             >
-                                <h3 className="font-serif text-3xl text-primary-dark mb-8">Order History</h3>
+                                <h3 className="font-serif text-3xl text-primary-dark dark:text-white mb-8">Order History</h3>
                                 
                                 {loading ? (
                                     <div className="flex justify-center py-12">
-                                        <div className="animate-spin rounded-full h-8 w-8 border-2 border-gray-200 border-b-primary-dark"></div>
+                                        <div className="animate-spin rounded-full h-8 w-8 border-2 border-gray-200 dark:border-gray-700 border-b-primary-dark dark:border-b-accent"></div>
                                     </div>
                                 ) : orders.length === 0 ? (
-                                    <div className="text-center py-16 bg-gray-50 rounded-xl border border-dashed border-gray-200">
-                                        <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 text-gray-400 shadow-sm">
+                                    <div className="text-center py-16 bg-gray-50 dark:bg-gray-800/40 rounded-xl border border-dashed border-gray-200 dark:border-gray-700">
+                                        <div className="w-16 h-16 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-400 dark:text-gray-500 shadow-sm">
                                             <FiPackage size={24} />
                                         </div>
-                                        <h4 className="font-medium text-primary-dark mb-2">No orders yet</h4>
-                                        <p className="text-sm text-gray-500 mb-6">When you place an order, it will appear here.</p>
-                                        <Link to="/product" className="inline-block px-6 py-2.5 bg-primary-dark text-white rounded-full text-xs font-bold uppercase tracking-widest hover:bg-black transition-colors">
+                                        <h4 className="font-medium text-primary-dark dark:text-white mb-2">No orders yet</h4>
+                                        <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">When you place an order, it will appear here.</p>
+                                        <Link to="/product" className="inline-block px-6 py-2.5 bg-primary-dark dark:bg-accent text-white rounded-full text-xs font-bold uppercase tracking-widest hover:bg-black dark:hover:bg-accent/80 transition-colors">
                                             Start Shopping
                                         </Link>
                                     </div>
@@ -329,49 +364,72 @@ export default function Profile() {
                                                 animate={{ opacity: 1, y: 0 }}
                                                 transition={{ delay: idx * 0.1 }}
                                                 key={order.orderId || idx} 
-                                                className="border border-gray-100 rounded-xl overflow-hidden hover:shadow-md transition-shadow"
+                                                className="border border-gray-100 dark:border-gray-800 rounded-xl overflow-hidden hover:shadow-md transition-shadow"
                                             >
-                                                <div className="bg-gray-50 px-6 py-4 flex flex-wrap justify-between items-center gap-4 border-b border-gray-100">
+                                                <div className="bg-gray-50 dark:bg-gray-800/60 px-6 py-4 flex flex-wrap justify-between items-center gap-4 border-b border-gray-100 dark:border-gray-800">
                                                     <div>
-                                                        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Order Placed</p>
-                                                        <p className="text-sm font-medium text-primary-dark">
+                                                        <p className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1">Order Placed</p>
+                                                        <p className="text-sm font-medium text-primary-dark dark:text-white">
                                                             {new Date(order.date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
                                                         </p>
                                                     </div>
                                                     <div>
-                                                        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Total</p>
-                                                        <p className="text-sm font-medium text-primary-dark">LKR {(order.total || 0).toFixed(2)}</p>
+                                                        <p className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1">Total</p>
+                                                        <p className="text-sm font-medium text-primary-dark dark:text-white">LKR {(order.total || 0).toFixed(2)}</p>
                                                     </div>
                                                     <div>
-                                                        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Order #</p>
+                                                        <p className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1">Order #</p>
                                                         <p className="text-sm font-medium text-accent">{order.orderId}</p>
                                                     </div>
                                                     <div>
-                                                        <Link 
-                                                            to={`/invoice/${order.orderId}`}
-                                                            className="px-4 py-2 bg-white border border-gray-200 text-primary-dark rounded-full text-xs font-bold uppercase tracking-widest hover:bg-gray-50 transition-colors inline-block text-center"
-                                                        >
-                                                            View Invoice
-                                                        </Link>
+                                                        <div className="flex flex-wrap items-center gap-2">
+                                                         {String(order.status || "Preparing").toLowerCase() !== "shipped" && 
+                                                          String(order.status || "Preparing").toLowerCase() !== "delivered" && 
+                                                          String(order.status || "Preparing").toLowerCase() !== "cancelled" && (
+                                                             <button
+                                                                 onClick={() => handleCustomerCancelOrder(order.orderId)}
+                                                                 className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-full text-xs font-bold uppercase tracking-widest transition-colors inline-block text-center cursor-pointer shadow-sm"
+                                                             >
+                                                                 Cancel Order
+                                                             </button>
+                                                         )}
+
+                                                         <Link 
+                                                             to={`/invoice/${order.orderId}`}
+                                                             className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-colors inline-block text-center ${
+                                                                 String(order.status || "").toLowerCase() === "cancelled" 
+                                                                     ? "bg-rose-500/10 text-rose-500 border border-rose-500/30 hover:bg-rose-500/20"
+                                                                     : "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-primary-dark dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700"
+                                                             }`}
+                                                         >
+                                                             {String(order.status || "").toLowerCase() === "cancelled" ? "Cancellation Invoice" : "View Invoice"}
+                                                         </Link>
+                                                     </div>
                                                     </div>
                                                 </div>
                                                 <div className="px-6 py-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                                                     <div className="flex-1">
-                                                        <h4 className="font-medium text-primary-dark mb-1">
-                                                            Status: <span className={order.status === 'Delivered' ? 'text-green-600' : 'text-orange-500'}>{order.status}</span>
+                                                        <h4 className="font-medium text-primary-dark dark:text-white mb-1">
+                                                            Status: <span className={
+                                                                order.status === 'Delivered' ? 'text-emerald-600 dark:text-emerald-400' :
+                                                                order.status === 'Shipped' ? 'text-violet-600 dark:text-violet-400' :
+                                                                order.status === 'Processing' ? 'text-blue-600 dark:text-blue-400' :
+                                                                order.status === 'Cancelled' ? 'text-rose-500 dark:text-rose-400' :
+                                                                'text-amber-600 dark:text-amber-400'
+                                                            }>{order.status}</span>
                                                         </h4>
-                                                        <p className="text-sm text-gray-500">
+                                                        <p className="text-sm text-gray-500 dark:text-gray-400">
                                                             {order.orderItems?.length || 0} items in this order
                                                         </p>
                                                     </div>
                                                     <div className="flex -space-x-4">
                                                         {order.orderItems?.slice(0, 3).map((item, i) => (
-                                                            <div key={i} className="w-12 h-12 rounded-full border-2 border-white bg-gray-100 overflow-hidden shrink-0">
+                                                            <div key={i} className="w-12 h-12 rounded-full border-2 border-white dark:border-gray-800 bg-gray-100 dark:bg-gray-800 overflow-hidden shrink-0">
                                                                 {item.image && <img src={item.image} alt="item" className="w-full h-full object-cover" />}
                                                             </div>
                                                         ))}
                                                         {(order.orderItems?.length || 0) > 3 && (
-                                                            <div className="w-12 h-12 rounded-full border-2 border-white bg-gray-100 flex items-center justify-center text-xs font-medium text-gray-500 shrink-0">
+                                                            <div className="w-12 h-12 rounded-full border-2 border-white dark:border-gray-800 bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-xs font-medium text-gray-500 dark:text-gray-400 shrink-0">
                                                                 +{(order.orderItems.length - 3)}
                                                             </div>
                                                         )}
@@ -389,49 +447,49 @@ export default function Profile() {
                             <motion.div 
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                className="bg-white/80 backdrop-blur-xl rounded-3xl p-8 md:p-10 shadow-xl border border-white"
+                                className="bg-white/80 dark:bg-[#181820]/90 backdrop-blur-xl rounded-3xl p-8 md:p-10 shadow-xl border border-white dark:border-gray-800"
                             >
                                 <div className="flex items-center gap-4 mb-8">
-                                    <div className="w-12 h-12 bg-primary-dark text-white rounded-full flex items-center justify-center text-xl shadow-lg">
+                                    <div className="w-12 h-12 bg-primary-dark dark:bg-accent text-white rounded-full flex items-center justify-center text-xl shadow-lg">
                                         <FiShield />
                                     </div>
                                     <div>
-                                        <h3 className="font-serif text-3xl text-primary-dark">Personal Details</h3>
-                                        <p className="text-gray-500">Update your information to keep your profile secure.</p>
+                                        <h3 className="font-serif text-3xl text-primary-dark dark:text-white">Personal Details</h3>
+                                        <p className="text-gray-500 dark:text-gray-400">Update your information to keep your profile secure.</p>
                                     </div>
                                 </div>
 
                                 <form onSubmit={handleUpdateProfile} className="space-y-6 max-w-2xl">
                                     <div className="flex flex-col md:flex-row gap-6">
                                         <div className="space-y-2 flex-1">
-                                            <label className="text-xs uppercase tracking-widest text-gray-500 font-semibold">First Name</label>
+                                            <label className="text-xs uppercase tracking-widest text-gray-500 dark:text-gray-400 font-semibold">First Name</label>
                                             <input 
                                                 type="text" required
-                                                className="w-full bg-white border border-gray-200 py-3 px-4 rounded-xl text-primary-dark focus:outline-none focus:border-primary-dark focus:ring-1 focus:ring-primary-dark transition-all shadow-sm" 
+                                                className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 py-3 px-4 rounded-xl text-primary-dark dark:text-white focus:outline-none focus:border-primary-dark dark:focus:border-accent focus:ring-1 focus:ring-primary-dark dark:focus:ring-accent transition-all shadow-sm" 
                                                 value={editFName} onChange={(e) => setEditFName(e.target.value)} 
                                             />
                                         </div>
                                         <div className="space-y-2 flex-1">
-                                            <label className="text-xs uppercase tracking-widest text-gray-500 font-semibold">Last Name</label>
+                                            <label className="text-xs uppercase tracking-widest text-gray-500 dark:text-gray-400 font-semibold">Last Name</label>
                                             <input 
                                                 type="text" required
-                                                className="w-full bg-white border border-gray-200 py-3 px-4 rounded-xl text-primary-dark focus:outline-none focus:border-primary-dark focus:ring-1 focus:ring-primary-dark transition-all shadow-sm" 
+                                                className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 py-3 px-4 rounded-xl text-primary-dark dark:text-white focus:outline-none focus:border-primary-dark dark:focus:border-accent focus:ring-1 focus:ring-primary-dark dark:focus:ring-accent transition-all shadow-sm" 
                                                 value={editLName} onChange={(e) => setEditLName(e.target.value)} 
                                             />
                                         </div>
                                     </div>
 
                                     <div className="space-y-2">
-                                        <label className="text-xs uppercase tracking-widest text-gray-500 font-semibold">Email Address (Cannot be changed)</label>
+                                        <label className="text-xs uppercase tracking-widest text-gray-500 dark:text-gray-400 font-semibold">Email Address (Cannot be changed)</label>
                                         <input 
                                             type="email" disabled
-                                            className="w-full bg-gray-50 border border-gray-200 py-3 px-4 rounded-xl text-gray-400 cursor-not-allowed shadow-sm" 
+                                            className="w-full bg-gray-50 dark:bg-gray-800/40 border border-gray-200 dark:border-gray-700 py-3 px-4 rounded-xl text-gray-400 dark:text-gray-500 cursor-not-allowed shadow-sm" 
                                             value={userProfile?.email || ""} 
                                         />
                                     </div>
 
                                     <div className="space-y-2 pt-2">
-                                        <label className="text-xs uppercase tracking-widest text-gray-500 font-semibold">Update Profile Picture</label>
+                                        <label className="text-xs uppercase tracking-widest text-gray-500 dark:text-gray-400 font-semibold">Update Profile Picture</label>
                                         <div className="relative overflow-hidden">
                                             <input 
                                                 type="file" 
@@ -439,10 +497,10 @@ export default function Profile() {
                                                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
                                                 accept="image/*"
                                             />
-                                            <div className="w-full bg-white border border-gray-200 border-dashed text-primary-dark text-sm rounded-xl px-4 py-6 outline-none flex flex-col items-center justify-center gap-2 hover:bg-gray-50 transition-colors shadow-sm">
-                                                <FiUploadCloud size={24} className="text-gray-400" /> 
+                                            <div className="w-full bg-white dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 border-dashed text-primary-dark dark:text-white text-sm rounded-xl px-4 py-6 outline-none flex flex-col items-center justify-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors shadow-sm">
+                                                <FiUploadCloud size={24} className="text-gray-400 dark:text-gray-500" /> 
                                                 <span className="font-medium">{editFile ? editFile.name : 'Click or drag image to upload'}</span>
-                                                <span className="text-xs text-gray-400">SVG, PNG, JPG or GIF (max. 800x400px)</span>
+                                                <span className="text-xs text-gray-400 dark:text-gray-500">SVG, PNG, JPG or GIF (max. 800x400px)</span>
                                             </div>
                                         </div>
                                     </div>
@@ -451,7 +509,7 @@ export default function Profile() {
                                         <button 
                                             type="submit"
                                             disabled={isUpdating || (!editFile && editFName === userProfile?.firstName && editLName === userProfile?.lastName)}
-                                            className="w-full md:w-auto bg-primary-dark text-white py-4 px-8 rounded-xl uppercase tracking-widest text-sm font-medium hover:bg-black transition-all flex justify-center items-center gap-2 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                                            className="w-full md:w-auto bg-primary-dark dark:bg-accent text-white py-4 px-8 rounded-xl uppercase tracking-widest text-sm font-medium hover:bg-black dark:hover:bg-accent/80 transition-all flex justify-center items-center gap-2 shadow-md disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                                         >
                                             {isUpdating ? 'Saving Changes...' : 'Save Changes'} <FiSave />
                                         </button>
@@ -465,22 +523,22 @@ export default function Profile() {
                             <motion.div 
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                className="bg-white/80 backdrop-blur-xl rounded-3xl p-8 md:p-10 shadow-xl border border-white"
+                                className="bg-white/80 dark:bg-[#181820]/90 backdrop-blur-xl rounded-3xl p-8 md:p-10 shadow-xl border border-white dark:border-gray-800"
                             >
                                 <div className="flex items-center justify-between mb-8">
                                     <div className="flex items-center gap-4">
-                                        <div className="w-12 h-12 bg-primary-dark text-white rounded-full flex items-center justify-center text-xl shadow-lg">
+                                        <div className="w-12 h-12 bg-primary-dark dark:bg-accent text-white rounded-full flex items-center justify-center text-xl shadow-lg">
                                             <FiMapPin />
                                         </div>
                                         <div>
-                                            <h3 className="font-serif text-3xl text-primary-dark">Address Book</h3>
-                                            <p className="text-gray-500">Manage your shipping and billing addresses.</p>
+                                            <h3 className="font-serif text-3xl text-primary-dark dark:text-white">Address Book</h3>
+                                            <p className="text-gray-500 dark:text-gray-400">Manage your shipping and billing addresses.</p>
                                         </div>
                                     </div>
                                     {!isAddingAddress && (
                                         <button 
                                             onClick={() => setIsAddingAddress(true)}
-                                            className="bg-primary-dark text-white px-4 py-2 rounded-xl text-sm font-medium tracking-widest uppercase hover:bg-black transition-colors flex items-center gap-2 shadow-md"
+                                            className="bg-primary-dark dark:bg-accent text-white px-4 py-2 rounded-xl text-sm font-medium tracking-widest uppercase hover:bg-black dark:hover:bg-accent/80 transition-colors flex items-center gap-2 shadow-md cursor-pointer"
                                         >
                                             <FiPlus /> Add New
                                         </button>
@@ -488,13 +546,13 @@ export default function Profile() {
                                 </div>
 
                                 {isAddingAddress ? (
-                                    <form onSubmit={handleAddAddress} className="bg-gray-50 p-6 rounded-2xl border border-gray-100 shadow-inner max-w-2xl">
-                                        <h4 className="font-serif text-xl text-primary-dark mb-4">{editingAddressIndex !== null ? "Edit Address" : "Add New Address"}</h4>
+                                    <form onSubmit={handleAddAddress} className="bg-gray-50 dark:bg-gray-800/40 p-6 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-inner max-w-2xl">
+                                        <h4 className="font-serif text-xl text-primary-dark dark:text-white mb-4">{editingAddressIndex !== null ? "Edit Address" : "Add New Address"}</h4>
                                         <div className="space-y-4">
                                             <div className="space-y-2">
-                                                <label className="text-xs uppercase tracking-widest text-gray-500 font-semibold">Address Label</label>
+                                                <label className="text-xs uppercase tracking-widest text-gray-500 dark:text-gray-400 font-semibold">Address Label</label>
                                                 <select 
-                                                    className="w-full bg-white border border-gray-200 py-3 px-4 rounded-xl text-primary-dark outline-none focus:border-primary-dark transition-all"
+                                                    className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 py-3 px-4 rounded-xl text-primary-dark dark:text-white outline-none focus:border-primary-dark dark:focus:border-accent transition-all"
                                                     value={newAddress.label}
                                                     onChange={(e) => setNewAddress({...newAddress, label: e.target.value})}
                                                 >
@@ -504,10 +562,10 @@ export default function Profile() {
                                                 </select>
                                             </div>
                                             <div className="space-y-2">
-                                                <label className="text-xs uppercase tracking-widest text-gray-500 font-semibold">Street Address</label>
+                                                <label className="text-xs uppercase tracking-widest text-gray-500 dark:text-gray-400 font-semibold">Street Address</label>
                                                 <input 
                                                     type="text" required
-                                                    className="w-full bg-white border border-gray-200 py-3 px-4 rounded-xl text-primary-dark outline-none focus:border-primary-dark transition-all"
+                                                    className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 py-3 px-4 rounded-xl text-primary-dark dark:text-white outline-none focus:border-primary-dark dark:focus:border-accent transition-all"
                                                     value={newAddress.street}
                                                     onChange={(e) => setNewAddress({...newAddress, street: e.target.value})}
                                                     placeholder="123 Beauty Lane, Apt 4B"
@@ -515,20 +573,20 @@ export default function Profile() {
                                             </div>
                                             <div className="flex gap-4">
                                                 <div className="space-y-2 flex-1">
-                                                    <label className="text-xs uppercase tracking-widest text-gray-500 font-semibold">City</label>
+                                                    <label className="text-xs uppercase tracking-widest text-gray-500 dark:text-gray-400 font-semibold">City</label>
                                                     <input 
                                                         type="text" required
-                                                        className="w-full bg-white border border-gray-200 py-3 px-4 rounded-xl text-primary-dark outline-none focus:border-primary-dark transition-all"
+                                                        className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 py-3 px-4 rounded-xl text-primary-dark dark:text-white outline-none focus:border-primary-dark dark:focus:border-accent transition-all"
                                                         value={newAddress.city}
                                                         onChange={(e) => setNewAddress({...newAddress, city: e.target.value})}
                                                         placeholder="New York"
                                                     />
                                                 </div>
                                                 <div className="space-y-2 flex-1">
-                                                    <label className="text-xs uppercase tracking-widest text-gray-500 font-semibold">ZIP Code</label>
+                                                    <label className="text-xs uppercase tracking-widest text-gray-500 dark:text-gray-400 font-semibold">ZIP Code</label>
                                                     <input 
                                                         type="text" required
-                                                        className="w-full bg-white border border-gray-200 py-3 px-4 rounded-xl text-primary-dark outline-none focus:border-primary-dark transition-all"
+                                                        className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 py-3 px-4 rounded-xl text-primary-dark dark:text-white outline-none focus:border-primary-dark dark:focus:border-accent transition-all"
                                                         value={newAddress.zipCode}
                                                         onChange={(e) => setNewAddress({...newAddress, zipCode: e.target.value})}
                                                         placeholder="10001"
@@ -536,10 +594,10 @@ export default function Profile() {
                                                 </div>
                                             </div>
                                             <div className="space-y-2">
-                                                <label className="text-xs uppercase tracking-widest text-gray-500 font-semibold">Phone Number</label>
+                                                <label className="text-xs uppercase tracking-widest text-gray-500 dark:text-gray-400 font-semibold">Phone Number</label>
                                                 <input 
                                                     type="tel" required
-                                                    className="w-full bg-white border border-gray-200 py-3 px-4 rounded-xl text-primary-dark outline-none focus:border-primary-dark transition-all"
+                                                    className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 py-3 px-4 rounded-xl text-primary-dark dark:text-white outline-none focus:border-primary-dark dark:focus:border-accent transition-all"
                                                     value={newAddress.phone}
                                                     onChange={(e) => setNewAddress({...newAddress, phone: e.target.value})}
                                                     placeholder="0771234567"
@@ -551,22 +609,22 @@ export default function Profile() {
                                                     id="isDefault" 
                                                     checked={newAddress.isDefault}
                                                     onChange={(e) => setNewAddress({...newAddress, isDefault: e.target.checked})}
-                                                    className="w-4 h-4 text-primary-dark accent-primary-dark"
+                                                    className="w-4 h-4 text-primary-dark dark:accent-accent cursor-pointer"
                                                 />
-                                                <label htmlFor="isDefault" className="text-sm text-gray-600 font-medium cursor-pointer">Set as default address</label>
+                                                <label htmlFor="isDefault" className="text-sm text-gray-600 dark:text-gray-300 font-medium cursor-pointer">Set as default address</label>
                                             </div>
                                         </div>
-                                        <div className="flex gap-4 mt-6 pt-6 border-t border-gray-200">
+                                        <div className="flex gap-4 mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
                                             <button 
                                                 type="submit"
-                                                className="bg-primary-dark text-white px-6 py-3 rounded-xl uppercase tracking-widest text-sm font-medium hover:bg-black transition-colors"
+                                                className="bg-primary-dark dark:bg-accent text-white px-6 py-3 rounded-xl uppercase tracking-widest text-sm font-medium hover:bg-black dark:hover:bg-accent/80 transition-colors cursor-pointer"
                                             >
                                                 {editingAddressIndex !== null ? "Update Address" : "Save Address"}
                                             </button>
                                             <button 
                                                 type="button"
                                                 onClick={handleCancelAddAddress}
-                                                className="bg-gray-200 text-gray-700 px-6 py-3 rounded-xl uppercase tracking-widest text-sm font-medium hover:bg-gray-300 transition-colors"
+                                                className="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-6 py-3 rounded-xl uppercase tracking-widest text-sm font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors cursor-pointer"
                                             >
                                                 Cancel
                                             </button>
@@ -576,41 +634,41 @@ export default function Profile() {
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         {userProfile?.addresses && userProfile.addresses.length > 0 ? (
                                             userProfile.addresses.map((addr, index) => (
-                                                <div key={index} className={`relative p-6 rounded-2xl border-2 transition-all ${addr.isDefault ? 'border-primary-dark bg-primary-dark/5' : 'border-gray-100 bg-white hover:border-gray-300'}`}>
+                                                <div key={index} className={`relative p-6 rounded-2xl border-2 transition-all ${addr.isDefault ? 'border-primary-dark dark:border-accent bg-primary-dark/5 dark:bg-accent/10' : 'border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-800/60 hover:border-gray-300 dark:hover:border-gray-700'}`}>
                                                     {addr.isDefault && (
-                                                        <span className="absolute top-4 right-4 text-xs font-bold uppercase tracking-widest bg-primary-dark text-white px-2 py-1 rounded-md flex items-center gap-1">
+                                                        <span className="absolute top-4 right-4 text-xs font-bold uppercase tracking-widest bg-primary-dark dark:bg-accent text-white px-2 py-1 rounded-md flex items-center gap-1">
                                                             <FiStar size={12}/> Default
                                                         </span>
                                                     )}
                                                     <div className="flex items-center gap-2 mb-3">
-                                                        <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-primary-dark">
+                                                        <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-primary-dark dark:text-white">
                                                             <FiMapPin size={14}/>
                                                         </div>
-                                                        <span className="font-serif font-bold text-lg text-primary-dark">{addr.label}</span>
+                                                        <span className="font-serif font-bold text-lg text-primary-dark dark:text-white">{addr.label}</span>
                                                     </div>
-                                                    <p className="text-gray-600 mb-1">{addr.street}</p>
-                                                    <p className="text-gray-600 mb-1">{addr.city}, {addr.zipCode}</p>
-                                                    {addr.phone && <p className="text-gray-600 mb-6 font-medium">Phone: {addr.phone}</p>}
+                                                    <p className="text-gray-600 dark:text-gray-300 mb-1">{addr.street}</p>
+                                                    <p className="text-gray-600 dark:text-gray-300 mb-1">{addr.city}, {addr.zipCode}</p>
+                                                    {addr.phone && <p className="text-gray-600 dark:text-gray-300 mb-6 font-medium">Phone: {addr.phone}</p>}
                                                     {!addr.phone && <div className="mb-6"></div>}
                                                     
                                                     <div className="flex items-center gap-4">
                                                         {!addr.isDefault && (
                                                             <button 
                                                                 onClick={() => handleSetDefaultAddress(index)}
-                                                                className="text-xs uppercase font-semibold text-primary-dark hover:text-black transition-colors"
+                                                                className="text-xs uppercase font-semibold text-primary-dark dark:text-accent hover:text-black dark:hover:text-white transition-colors cursor-pointer"
                                                             >
                                                                 Set as Default
                                                             </button>
                                                         )}
                                                         <button 
                                                             onClick={() => handleEditAddress(index)}
-                                                            className="text-xs flex items-center gap-1 uppercase font-semibold text-gray-500 hover:text-primary-dark transition-colors ml-auto"
+                                                            className="text-xs flex items-center gap-1 uppercase font-semibold text-gray-500 dark:text-gray-400 hover:text-primary-dark dark:hover:text-white transition-colors ml-auto cursor-pointer"
                                                         >
                                                             <FiEdit2 /> Edit
                                                         </button>
                                                         <button 
                                                             onClick={() => handleDeleteAddress(index)}
-                                                            className="text-xs flex items-center gap-1 uppercase font-semibold text-red-400 hover:text-red-600 transition-colors"
+                                                            className="text-xs flex items-center gap-1 uppercase font-semibold text-red-400 hover:text-red-600 transition-colors cursor-pointer"
                                                         >
                                                             <FiTrash2 /> Delete
                                                         </button>
@@ -618,14 +676,14 @@ export default function Profile() {
                                                 </div>
                                             ))
                                         ) : (
-                                            <div className="col-span-full py-12 text-center bg-white/50 rounded-2xl border border-dashed border-gray-300">
-                                                <div className="w-16 h-16 bg-gray-100 text-gray-400 rounded-full flex items-center justify-center mx-auto mb-4">
+                                            <div className="col-span-full py-12 text-center bg-white/50 dark:bg-gray-800/40 rounded-2xl border border-dashed border-gray-300 dark:border-gray-700">
+                                                <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 rounded-full flex items-center justify-center mx-auto mb-4">
                                                     <FiMapPin size={24} />
                                                 </div>
-                                                <p className="text-gray-500 font-medium">No addresses saved yet.</p>
+                                                <p className="text-gray-500 dark:text-gray-400 font-medium">No addresses saved yet.</p>
                                                 <button 
                                                     onClick={() => setIsAddingAddress(true)}
-                                                    className="mt-4 text-primary-dark font-medium underline"
+                                                    className="mt-4 text-primary-dark dark:text-accent font-medium underline cursor-pointer"
                                                 >
                                                     Add your first address
                                                 </button>
@@ -641,13 +699,13 @@ export default function Profile() {
                             <motion.div 
                                 initial={{ opacity: 0, scale: 0.95 }}
                                 animate={{ opacity: 1, scale: 1 }}
-                                className="bg-white/80 backdrop-blur-xl rounded-3xl p-8 md:p-10 shadow-xl border border-white h-96 flex flex-col items-center justify-center text-center"
+                                className="bg-white/80 dark:bg-[#181820]/90 backdrop-blur-xl rounded-3xl p-8 md:p-10 shadow-xl border border-white dark:border-gray-800 h-96 flex flex-col items-center justify-center text-center"
                             >
-                                <div className="w-24 h-24 bg-gradient-to-br from-gray-50 to-gray-100 rounded-full flex items-center justify-center mb-6 text-primary-dark shadow-inner">
+                                <div className="w-24 h-24 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-full flex items-center justify-center mb-6 text-primary-dark dark:text-white shadow-inner">
                                     <FiSettings size={40} className="opacity-80" />
                                 </div>
-                                <h3 className="font-serif text-3xl text-primary-dark mb-3 capitalize">{activeTab} Module</h3>
-                                <p className="text-gray-500 max-w-md text-lg">This section is currently under construction and will feature advanced user controls.</p>
+                                <h3 className="font-serif text-3xl text-primary-dark dark:text-white mb-3 capitalize">{activeTab} Module</h3>
+                                <p className="text-gray-500 dark:text-gray-400 max-w-md text-lg">This section is currently under construction and will feature advanced user controls.</p>
                             </motion.div>
                         )}
 

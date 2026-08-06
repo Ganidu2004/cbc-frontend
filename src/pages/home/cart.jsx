@@ -3,7 +3,7 @@ import { loadCart } from "../../utils/cartFunction";
 import CartCard from "../../components/common/CartCard";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
-import { FiLock, FiArrowRight, FiShoppingBag, FiTag, FiChevronRight, FiCheckCircle } from "react-icons/fi";
+import { FiLock, FiArrowRight, FiShoppingBag, FiTag, FiChevronRight, FiCheckCircle, FiArrowLeft } from "react-icons/fi";
 import { useNavigate, Link } from "react-router-dom";
 import toast from "react-hot-toast";
 
@@ -25,52 +25,62 @@ export default function Cart() {
   const [showAddresses, setShowAddresses] = useState(false);
 
   useEffect(() => {
-    let currentCart = loadCart() || [];
-    setCart(currentCart);
+    const refreshCartData = () => {
+      let currentCart = loadCart() || [];
+      setCart(currentCart);
 
-    if (currentCart.length === 0) return;
-
-    const token = localStorage.getItem("token");
-    if (!token) {
-        calculateMockTotals(currentCart);
+      if (currentCart.length === 0) {
+        setTotal(0);
+        setLabeledTotal(0);
+        setShippingCharge(0);
         return;
-    }
+      }
 
-    axios
-      .post(
-        import.meta.env.VITE_BACKEND_URL + "/api/orders/quote",
-        {
-          orderItems: currentCart,
-        },
-        {
-          headers: {
-            Authorization: "Bearer " + token,
+      const token = localStorage.getItem("token");
+      if (!token) {
+          calculateMockTotals(currentCart);
+          return;
+      }
+
+      axios
+        .post(
+          import.meta.env.VITE_BACKEND_URL + "/api/orders/quote",
+          {
+            orderItems: currentCart,
           },
-        }
-      )
-      .then((res) => {
-        setTotal(res.data.total);
-        setLabeledTotal(res.data.labeledTotal);
-        setShippingCharge(res.data.shippingCharge || 0);
-      })
-      .catch((err) => {
-        console.error("Quote fetch failed", err);
-        calculateMockTotals(currentCart);
-      });
-
-    axios
-      .get(import.meta.env.VITE_BACKEND_URL + "/api/users/profile", {
-          headers: { Authorization: "Bearer " + token }
-      })
-      .then((res) => {
-          if (res.data && res.data.addresses && res.data.addresses.length > 0) {
-              setAddresses(res.data.addresses);
-              const defaultAddr = res.data.addresses.find(a => a.isDefault) || res.data.addresses[0];
-              setSelectedAddress(defaultAddr);
+          {
+            headers: {
+              Authorization: "Bearer " + token,
+            },
           }
-      })
-      .catch((err) => console.error("Profile fetch failed", err));
+        )
+        .then((res) => {
+          setTotal(res.data.total);
+          setLabeledTotal(res.data.labeledTotal);
+          setShippingCharge(res.data.shippingCharge || 0);
+        })
+        .catch((err) => {
+          console.error("Quote fetch failed", err);
+          calculateMockTotals(currentCart);
+        });
 
+      axios
+        .get(import.meta.env.VITE_BACKEND_URL + "/api/users/profile", {
+            headers: { Authorization: "Bearer " + token }
+        })
+        .then((res) => {
+            if (res.data && res.data.addresses && res.data.addresses.length > 0) {
+                setAddresses(res.data.addresses);
+                const defaultAddr = res.data.addresses.find(a => a.isDefault) || res.data.addresses[0];
+                setSelectedAddress(defaultAddr);
+            }
+        })
+        .catch((err) => console.error("Profile fetch failed", err));
+    };
+
+    refreshCartData();
+    window.addEventListener("aura_cart_updated", refreshCartData);
+    return () => window.removeEventListener("aura_cart_updated", refreshCartData);
   }, [navigate]);
 
   const calculateMockTotals = async (currentCart) => {
@@ -106,13 +116,6 @@ export default function Cart() {
     }
   };
 
-  const handleCheckout = () => {
-    // Proceed to checkout logic (route to the new checkout page)
-    navigate("/checkout");
-  };
-
-
-
   // Safe parsing to prevent NaN crashes
   const safeTotal = isNaN(total) ? 0 : total;
   const safeLabeledTotal = isNaN(labeledTotal) ? 0 : labeledTotal;
@@ -129,8 +132,15 @@ export default function Cart() {
       </div>
 
       <div className="max-w-7xl mx-auto z-10 relative">
-        <h1 className="text-4xl md:text-5xl font-serif text-primary-dark mb-2">Your Shopping Bag</h1>
-        <p className="text-gray-500 font-medium tracking-widest uppercase text-sm mb-12">
+        <button 
+          onClick={() => navigate('/product')}
+          className="inline-flex items-center gap-2 px-4 py-2 mb-6 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-primary-dark dark:hover:text-white bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-full border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow transition-all cursor-pointer group"
+        >
+          <FiArrowLeft className="group-hover:-translate-x-1 transition-transform" /> Back to Shop
+        </button>
+
+        <h1 className="text-4xl md:text-5xl font-serif text-primary-dark dark:text-white mb-2">Your Shopping Bag</h1>
+        <p className="text-gray-500 dark:text-gray-400 font-medium tracking-widest uppercase text-sm mb-12">
           {cart.length} {cart.length === 1 ? 'Item' : 'Items'}
         </p>
 
@@ -138,14 +148,14 @@ export default function Cart() {
             <motion.div 
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="w-full bg-white/60 backdrop-blur-xl border border-white rounded-3xl p-16 text-center shadow-2xl flex flex-col items-center justify-center min-h-[50vh]"
+              className="w-full bg-white/70 dark:bg-[#1a1a24]/90 backdrop-blur-xl border border-white dark:border-gray-800 rounded-3xl p-16 text-center shadow-2xl flex flex-col items-center justify-center min-h-[50vh]"
             >
-              <div className="w-24 h-24 bg-accent-light/20 text-accent rounded-full flex items-center justify-center mb-6 shadow-inner">
+              <div className="w-24 h-24 bg-accent/10 dark:bg-accent/20 text-accent rounded-full flex items-center justify-center mb-6 shadow-inner">
                 <FiShoppingBag size={40} />
               </div>
-              <h2 className="text-3xl font-serif text-primary-dark mb-4">Your bag is empty</h2>
-              <p className="text-gray-500 mb-8 max-w-md mx-auto">Looks like you haven't added anything to your bag yet. Discover our latest beauty essentials.</p>
-              <Link to="/product" className="bg-primary-dark text-white px-8 py-4 rounded-xl uppercase tracking-widest text-sm font-medium hover:bg-black transition-all shadow-xl hover:shadow-2xl hover:-translate-y-1">
+              <h2 className="text-3xl font-serif text-primary-dark dark:text-white mb-4">Your bag is empty</h2>
+              <p className="text-gray-500 dark:text-gray-400 mb-8 max-w-md mx-auto">Looks like you haven't added anything to your bag yet. Discover our latest beauty essentials.</p>
+              <Link to="/product" className="bg-primary-dark dark:bg-accent text-white px-8 py-4 rounded-xl uppercase tracking-widest text-sm font-medium hover:bg-black dark:hover:bg-accent/80 transition-all shadow-xl hover:shadow-2xl hover:-translate-y-1 cursor-pointer">
                 Continue Shopping
               </Link>
             </motion.div>
@@ -155,8 +165,8 @@ export default function Cart() {
             {/* Cart Items List */}
             <div className="flex-1">
 
-              <div className="bg-white/60 backdrop-blur-xl border border-white rounded-3xl shadow-xl overflow-hidden p-6 md:p-8">
-                <div className="hidden md:grid grid-cols-12 text-xs uppercase tracking-widest text-gray-400 font-semibold mb-4 pb-4 border-b border-gray-200">
+              <div className="bg-white/70 dark:bg-[#1a1a24]/90 backdrop-blur-xl border border-white dark:border-gray-800 rounded-3xl shadow-xl overflow-hidden p-6 md:p-8">
+                <div className="hidden md:grid grid-cols-12 text-xs uppercase tracking-widest text-gray-400 dark:text-gray-500 font-semibold mb-4 pb-4 border-b border-gray-200 dark:border-gray-800">
                   <div className="col-span-6">Product</div>
                   <div className="col-span-3 text-center">Quantity</div>
                   <div className="col-span-3 text-right">Total</div>
@@ -305,7 +315,7 @@ export default function Cart() {
 
                 <button
                   onClick={() => navigate('/checkout', { state: { selectedAddress } })}
-                  className="w-full bg-white text-black py-4 rounded-2xl uppercase tracking-widest text-sm font-bold hover:bg-accent hover:text-white transition-all flex justify-center items-center gap-3 mb-6 group shadow-lg hover:-translate-y-1"
+                  className="w-full bg-primary-dark dark:bg-accent text-white py-4 rounded-2xl uppercase tracking-widest text-sm font-bold hover:bg-black dark:hover:bg-accent/80 transition-all flex justify-center items-center gap-3 mb-6 group shadow-lg hover:-translate-y-1 cursor-pointer"
                 >
                   Proceed to Checkout <FiArrowRight className="group-hover:translate-x-1 transition-transform" />
                 </button>

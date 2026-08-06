@@ -1,6 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap');
 @import "tailwindcss";
 
+@variant dark (&:where(.dark, .dark *));
+
 @theme {
   --color-primary: #FAF9F6; /* Off-white / Cream */
   --color-primary-dark: #1A1A1A; /* Deep Charcoal */
@@ -13,14 +15,102 @@
   --font-sans: "Inter", sans-serif;
 }
 
+:root {
+  color-scheme: light dark;
+}
+
 body {
   font-family: var(--font-sans);
   background-color: var(--color-primary);
   color: var(--color-primary-dark);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 h1, h2, h3, h4, h5, h6, .font-serif {
   font-family: var(--font-serif);
+}
+
+/* Global Dark Mode overrides for rich aesthetics */
+html.dark {
+  color-scheme: dark;
+  --color-primary: #121212;
+  --color-primary-dark: #161620;
+  --color-secondary: #1E1E24;
+  --color-secondary-dark: #2A2A32;
+}
+
+html.dark body {
+  background-color: #121212;
+  color: #f3f4f6;
+}
+
+html.dark .bg-white {
+  background-color: #1a1a24 !important;
+  color: #f3f4f6;
+}
+
+html.dark [class*="bg-white/"] {
+  background-color: rgba(26, 26, 36, 0.85) !important;
+  color: #f3f4f6;
+  border-color: #2e2e3a !important;
+}
+
+html.dark .bg-gray-50,
+html.dark .bg-gray-50\/50 {
+  background-color: #141419 !important;
+}
+
+html.dark .bg-gray-100 {
+  background-color: #242430 !important;
+}
+
+html.dark .text-primary-dark {
+  color: #f3f4f6 !important;
+}
+
+html.dark .text-gray-900,
+html.dark .text-gray-800 {
+  color: #f9fafb !important;
+}
+
+html.dark .text-gray-700,
+html.dark .text-gray-600 {
+  color: #d1d5db !important;
+}
+
+html.dark .text-gray-500 {
+  color: #9ca3af !important;
+}
+
+html.dark .border-gray-100,
+html.dark .border-gray-200,
+html.dark .border-gray-300 {
+  border-color: #2e2e3a !important;
+}
+
+html.dark input:not(.bg-transparent),
+html.dark select:not(.bg-transparent),
+html.dark textarea:not(.bg-transparent) {
+  background-color: #22222e !important;
+  color: #f3f4f6 !important;
+  border-color: #374151 !important;
+}
+
+html.dark input.bg-transparent,
+html.dark textarea.bg-transparent {
+  color: #f3f4f6 !important;
+}
+
+html.dark header.bg-white\/90 {
+  background-color: rgba(22, 22, 30, 0.9) !important;
+}
+
+html.dark .shadow-sm,
+html.dark .shadow-md,
+html.dark .shadow-lg,
+html.dark .shadow-xl,
+html.dark .shadow-2xl {
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5) !important;
 }
 
 /* Hide scrollbar for carousels but keep functionality */

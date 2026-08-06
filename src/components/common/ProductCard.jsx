@@ -11,7 +11,7 @@ export default function ProductCard({ product, onQuickAdd }) {
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
         >
-            <Link to={`/productInfo/${product.productId}`} className="relative aspect-[3/4] w-full overflow-hidden block bg-gray-50">
+            <Link to={`/productInfo/${product.productId}`} className="relative aspect-[3/4] w-full overflow-hidden block bg-gray-50 dark:bg-gray-800">
                 {product.images && product.images.length > 0 ? (
                     <img
                         src={product.images[0]}
@@ -19,7 +19,7 @@ export default function ProductCard({ product, onQuickAdd }) {
                         alt={product.productName}
                     />
                 ) : (
-                    <div className="absolute inset-0 w-full h-full bg-gray-200 flex items-center justify-center text-gray-400 text-sm">No Image</div>
+                    <div className="absolute inset-0 w-full h-full bg-gray-200 dark:bg-gray-800 flex items-center justify-center text-gray-400 dark:text-gray-500 text-sm">No Image</div>
                 )}
                 {product.hoverImage && (
                     <img
@@ -39,7 +39,7 @@ export default function ProductCard({ product, onQuickAdd }) {
                             e.preventDefault(); // prevent Link navigation
                             onQuickAdd();
                         }}
-                        className="w-full bg-white text-primary-dark font-medium py-3 shadow-lg hover:bg-black hover:text-white flex items-center justify-center gap-2 transition-colors uppercase tracking-widest text-xs"
+                        className="w-full bg-white dark:bg-gray-800 text-primary-dark dark:text-white font-medium py-3 shadow-lg hover:bg-black dark:hover:bg-accent hover:text-white flex items-center justify-center gap-2 transition-colors uppercase tracking-widest text-xs cursor-pointer"
                     >
                         <FiPlus size={14} /> Quick Add
                     </button>
@@ -47,17 +47,17 @@ export default function ProductCard({ product, onQuickAdd }) {
             </Link>
 
             <div className="py-5 flex flex-col gap-1 text-left">
-                <h1 className="text-lg font-serif text-primary-dark group-hover:text-accent transition-colors">
+                <h1 className="text-lg font-serif text-primary-dark dark:text-white group-hover:text-accent transition-colors">
                     {product.productName}
                 </h1>
                 
                 <div className="flex items-center gap-3 mt-1">
                     {product.lastPrice < product.price && (
-                        <p className="text-sm font-light text-gray-400 line-through">
+                        <p className="text-sm font-light text-gray-400 dark:text-gray-500 line-through">
                             Rs. {product.price.toFixed(2)}
                         </p>
                     )}
-                    <p className="text-sm font-medium text-gray-600">
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-200">
                         Rs. {product.lastPrice?.toFixed(2) || product.price?.toFixed(2) || '0.00'}
                     </p>
                 </div>

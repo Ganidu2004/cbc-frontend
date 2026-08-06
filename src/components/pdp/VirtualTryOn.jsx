@@ -17,7 +17,7 @@ export default function VirtualTryOn({ shades }) {
     <>
       <button 
         onClick={handleOpen}
-        className="w-full border border-primary-dark text-primary-dark font-medium py-3 hover:bg-primary-dark hover:text-white transition-colors flex items-center justify-center gap-2 uppercase tracking-wider text-sm mt-4"
+        className="w-full border border-primary-dark dark:border-gray-700 text-primary-dark dark:text-white font-medium py-3 hover:bg-primary-dark dark:hover:bg-gray-800 hover:text-white transition-colors flex items-center justify-center gap-2 uppercase tracking-wider text-sm mt-4 rounded-md cursor-pointer"
       >
         <FiCamera /> Virtual Try-On
       </button>

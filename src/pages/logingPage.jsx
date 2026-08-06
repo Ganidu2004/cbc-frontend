@@ -71,17 +71,17 @@ export default function LoginPage() {
           className="w-full max-w-md"
         >
           <div className="text-center mb-10">
-            <h1 className="font-serif text-4xl text-primary-dark mb-2">Welcome Back</h1>
-            <p className="text-gray-500 font-light">Sign in to access your exclusive offers and rewards.</p>
+            <h1 className="font-serif text-4xl text-primary-dark dark:text-white mb-2">Welcome Back</h1>
+            <p className="text-gray-500 dark:text-gray-400 font-light">Sign in to access your exclusive offers and rewards.</p>
           </div>
 
           <form onSubmit={login} className="space-y-6">
             <div className="space-y-1">
-              <label className="text-xs uppercase tracking-widest text-gray-500 font-semibold">Email Address</label>
+              <label className="text-xs uppercase tracking-widest text-gray-500 dark:text-gray-400 font-semibold">Email Address</label>
               <input 
                 type="email"
                 required
-                className="w-full bg-transparent border-b border-gray-300 py-3 text-primary-dark focus:outline-none focus:border-primary-dark transition-colors" 
+                className="w-full bg-transparent border-b border-gray-300 dark:border-gray-700 py-3 text-primary-dark dark:text-white focus:outline-none focus:border-primary-dark dark:focus:border-accent transition-colors placeholder:text-gray-400 dark:placeholder:text-gray-500" 
                 placeholder="Enter your email"
                 value={email} 
                 onChange={(e) => setEmail(e.target.value)} 
@@ -89,12 +89,12 @@ export default function LoginPage() {
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs uppercase tracking-widest text-gray-500 font-semibold">Password</label>
+              <label className="text-xs uppercase tracking-widest text-gray-500 dark:text-gray-400 font-semibold">Password</label>
               <div className="relative">
                 <input 
                   type={showPassword ? "text" : "password"}
                   required
-                  className="w-full bg-transparent border-b border-gray-300 py-3 text-primary-dark focus:outline-none focus:border-primary-dark transition-colors pr-10" 
+                  className="w-full bg-transparent border-b border-gray-300 dark:border-gray-700 py-3 text-primary-dark dark:text-white focus:outline-none focus:border-primary-dark dark:focus:border-accent transition-colors pr-10 placeholder:text-gray-400 dark:placeholder:text-gray-500" 
                   placeholder="Enter your password"
                   value={password} 
                   onChange={(e) => setPassword(e.target.value)} 
@@ -102,7 +102,7 @@ export default function LoginPage() {
                 <button 
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-0 top-3 text-gray-400 hover:text-gray-600"
+                  className="absolute right-0 top-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                 >
                   {showPassword ? <FiEyeOff /> : <FiEye />}
                 </button>
@@ -111,38 +111,38 @@ export default function LoginPage() {
             
             <div className="flex justify-between items-center text-sm">
               <label className="flex items-center space-x-2 cursor-pointer group">
-                <input type="checkbox" className="accent-primary-dark cursor-pointer w-4 h-4" />
-                <span className="text-gray-600 group-hover:text-primary-dark transition-colors">Remember Me</span>
+                <input type="checkbox" className="accent-primary-dark dark:accent-accent cursor-pointer w-4 h-4" />
+                <span className="text-gray-600 dark:text-gray-400 group-hover:text-primary-dark dark:group-hover:text-white transition-colors">Remember Me</span>
               </label>
-              <a href="#" className="text-gray-500 hover:text-primary-dark underline transition-colors">Forgot Password?</a>
+              <a href="#" className="text-gray-500 dark:text-gray-400 hover:text-primary-dark dark:hover:text-white underline transition-colors">Forgot Password?</a>
             </div>
 
             <button 
               type="submit"
-              className="w-full bg-primary-dark text-white py-4 uppercase tracking-widest text-sm font-medium hover:bg-black transition-colors flex justify-center items-center gap-2 group mt-8"
+              className="w-full bg-primary-dark dark:bg-accent text-white py-4 uppercase tracking-widest text-sm font-medium hover:bg-black dark:hover:bg-accent/80 transition-colors flex justify-center items-center gap-2 group mt-8 cursor-pointer"
             >
               Sign In <FiArrowRight className="group-hover:translate-x-1 transition-transform" />
             </button>
           </form>
 
           <div className="my-8 flex items-center gap-4">
-            <div className="flex-1 h-px bg-gray-200"></div>
-            <span className="text-xs uppercase tracking-widest text-gray-400 font-medium">Or</span>
-            <div className="flex-1 h-px bg-gray-200"></div>
+            <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700"></div>
+            <span className="text-xs uppercase tracking-widest text-gray-400 dark:text-gray-500 font-medium">Or</span>
+            <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700"></div>
           </div>
 
           <div className="flex gap-4">
-            <button className="flex-1 bg-white border border-gray-200 text-primary-dark py-4 uppercase tracking-widest text-sm font-medium hover:border-gray-400 transition-colors flex justify-center items-center gap-3">
+            <button className="flex-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-primary-dark dark:text-white py-4 uppercase tracking-widest text-sm font-medium hover:border-gray-400 dark:hover:border-gray-500 transition-colors flex justify-center items-center gap-3 cursor-pointer">
               <FcGoogle className="text-xl" /> Google
             </button>
-            <button className="flex-1 bg-white border border-gray-200 text-primary-dark py-4 uppercase tracking-widest text-sm font-medium hover:border-gray-400 transition-colors flex justify-center items-center gap-3">
+            <button className="flex-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-primary-dark dark:text-white py-4 uppercase tracking-widest text-sm font-medium hover:border-gray-400 dark:hover:border-gray-500 transition-colors flex justify-center items-center gap-3 cursor-pointer">
               <FaApple className="text-xl" /> Apple
             </button>
           </div>
 
-          <p className="text-center text-gray-500 text-sm mt-10">
+          <p className="text-center text-gray-500 dark:text-gray-400 text-sm mt-10">
             Don't have an account?{" "}
-            <Link to="/singin" className="text-primary-dark font-semibold hover:underline">
+            <Link to="/singin" className="text-primary-dark dark:text-white font-semibold hover:underline">
               Create an account
             </Link>
           </p>

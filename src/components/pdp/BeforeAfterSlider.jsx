@@ -26,10 +26,10 @@ export default function BeforeAfterSlider() {
   }, []);
 
   return (
-    <div className="my-16 bg-white">
+    <div className="my-16 bg-white dark:bg-[#121212]">
       <div className="text-center mb-10">
-        <h3 className="font-serif text-3xl md:text-4xl text-primary-dark mb-4">Clinically Proven Results</h3>
-        <p className="text-gray-500 font-light max-w-xl mx-auto">See the visible difference after just 4 weeks of consistent use.</p>
+        <h3 className="font-serif text-3xl md:text-4xl text-primary-dark dark:text-white mb-4">Clinically Proven Results</h3>
+        <p className="text-gray-500 dark:text-gray-400 font-light max-w-xl mx-auto">See the visible difference after just 4 weeks of consistent use.</p>
       </div>
 
       <div 

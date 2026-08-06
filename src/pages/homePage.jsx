@@ -10,6 +10,8 @@ import Contact from "./home/contact";
 import Invoice from "./home/invoice";
 import Profile from "./home/profile";
 import Checkout from "./home/checkout";
+import OrderTracking from "./home/orderTracking";
+import TrackTimeline from "./home/trackTimeline";
 
 export default function HomePage() {
   return (
@@ -25,6 +27,8 @@ export default function HomePage() {
           <Route path="/cart" element={<Cart/>}/>
           <Route path="/checkout" element={<Checkout/>}/>
           <Route path="/profile" element={<Profile/>}/>
+          <Route path="/track-order" element={<OrderTracking/>}/>
+          <Route path="/track-timeline/:orderId" element={<TrackTimeline/>}/>
           <Route path="/invoice/:orderId" element={<Invoice/>}/>
           <Route path="/productInfo/:id" element={<ProductOverview/>}/>
         </Routes>
