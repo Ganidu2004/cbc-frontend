@@ -50,7 +50,7 @@ const ReelCard = ({ reel }) => {
 
   return (
     <div 
-      className="relative min-w-[260px] md:min-w-[320px] h-[450px] md:h-[550px] snap-center rounded-lg overflow-hidden group cursor-pointer bg-gray-900"
+      className="relative min-w-[220px] sm:min-w-[260px] md:min-w-[320px] h-[400px] sm:h-[450px] md:h-[550px] snap-center rounded-lg overflow-hidden group cursor-pointer bg-gray-900"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >

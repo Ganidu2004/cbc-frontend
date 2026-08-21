@@ -1,5 +1,6 @@
 import { Route, Routes } from "react-router-dom";
 import Header from "../components/common/Header";
+import Footer from "../components/common/Footer";
 import LoginPage from "./logingPage";
 import ProductOverview from "./home/productOverview";
 import ProductPage from "./home/product";
@@ -15,9 +16,9 @@ import TrackTimeline from "./home/trackTimeline";
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen w-full bg-primary relative">
+    <div className="min-h-screen w-full bg-primary relative flex flex-col justify-between">
       <Header/>
-      <div className="w-full">
+      <div className="w-full flex-grow">
         <Routes>
           <Route path="/" element={<HomeContent />}/>
           <Route path="/product" element={<ProductPage/>}/>
@@ -33,6 +34,8 @@ export default function HomePage() {
           <Route path="/productInfo/:id" element={<ProductOverview/>}/>
         </Routes>
       </div>
+      <Footer />
     </div>
   );
 }
+
