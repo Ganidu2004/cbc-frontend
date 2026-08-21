@@ -83,7 +83,7 @@ export default function ProductOverview(){
                 <motion.div 
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
-                    className="w-full lg:w-1/2 h-auto sticky top-28"
+                    className="w-full lg:w-1/2 h-auto lg:sticky lg:top-28"
                 >
                     <ImageSlider images={product.images}/>
                 </motion.div>
