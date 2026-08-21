@@ -212,7 +212,7 @@ export default function Header(){
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -20 }}
                         transition={{ duration: 0.2 }}
-                        className="fixed inset-0 z-40 bg-white/95 dark:bg-[#121218]/95 backdrop-blur-2xl pt-24 px-6 pb-10 flex flex-col justify-between md:hidden"
+                        className="fixed inset-0 z-[60] bg-white dark:bg-[#121218] pt-24 px-6 pb-12 flex flex-col justify-between overflow-y-auto md:hidden"
                     >
                         <div className="flex flex-col gap-3">
                             <p className="text-[11px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2">Navigation</p>
@@ -226,7 +226,7 @@ export default function Header(){
                                         key={item.path}
                                         to={item.path}
                                         onClick={() => setMobileMenuOpen(false)}
-                                        className={`flex items-center justify-between py-3 px-4 rounded-2xl text-sm uppercase tracking-widest font-bold transition-all ${
+                                        className={`flex items-center justify-between py-3.5 px-4 rounded-2xl text-sm uppercase tracking-widest font-bold transition-all ${
                                             isActive
                                                 ? "bg-accent/15 text-accent border border-accent/30 shadow-sm"
                                                 : "text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800/60"
@@ -239,44 +239,44 @@ export default function Header(){
                             })}
                         </div>
 
-                        {/* Mobile User Actions */}
-                        <div className="pt-6 border-t border-gray-200 dark:border-gray-800 space-y-3">
+                        {/* Mobile User Actions / Profile */}
+                        <div className="pt-6 mt-6 border-t border-gray-200 dark:border-gray-800 space-y-3">
                             {!token ? (
                                 <div className="grid grid-cols-2 gap-3">
                                     <Link
                                         to="/login"
                                         onClick={() => setMobileMenuOpen(false)}
-                                        className="py-3 text-center rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-white text-xs font-bold uppercase tracking-widest"
+                                        className="py-3.5 text-center rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-white text-xs font-bold uppercase tracking-widest"
                                     >
                                         Sign In
                                     </Link>
                                     <Link
                                         to="/singin"
                                         onClick={() => setMobileMenuOpen(false)}
-                                        className="py-3 text-center rounded-xl bg-accent text-white text-xs font-bold uppercase tracking-widest shadow-md shadow-accent/20"
+                                        className="py-3.5 text-center rounded-xl bg-accent text-white text-xs font-bold uppercase tracking-widest shadow-md shadow-accent/20"
                                     >
                                         Register
                                     </Link>
                                 </div>
                             ) : (
-                                <div className="flex items-center justify-between p-3 rounded-2xl bg-gray-100 dark:bg-gray-800/80">
+                                <div className="flex items-center justify-between p-4 rounded-2xl bg-gray-100 dark:bg-gray-800/90 border border-gray-200 dark:border-gray-700/60 shadow-sm">
                                     <Link
                                         to="/profile"
                                         onClick={() => setMobileMenuOpen(false)}
-                                        className="flex items-center gap-3"
+                                        className="flex items-center gap-3.5 flex-1"
                                     >
-                                        <div className="w-10 h-10 rounded-full bg-accent/20 text-accent flex items-center justify-center font-bold overflow-hidden">
+                                        <div className="w-11 h-11 rounded-full bg-accent/20 text-accent flex items-center justify-center font-bold overflow-hidden shrink-0 border border-accent/30">
                                             {userProfile?.profilePic ? (
                                                 <img src={userProfile.profilePic} alt="Profile" className="w-full h-full object-cover" />
                                             ) : (
-                                                <FiUser size={18} />
+                                                <FiUser size={20} />
                                             )}
                                         </div>
                                         <div>
                                             <p className="text-sm font-bold text-gray-900 dark:text-white leading-tight">
                                                 {userProfile?.firstName ? `${userProfile.firstName} ${userProfile.lastName || ''}` : "My Account"}
                                             </p>
-                                            <p className="text-[11px] text-gray-500 dark:text-gray-400">View Profile & Orders</p>
+                                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">View Profile & Orders</p>
                                         </div>
                                     </Link>
                                     <button
@@ -284,7 +284,7 @@ export default function Header(){
                                             setMobileMenuOpen(false);
                                             handleSignOut();
                                         }}
-                                        className="p-2.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-xl transition-colors cursor-pointer"
+                                        className="p-2.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-xl transition-colors cursor-pointer shrink-0 ml-2"
                                         title="Sign Out"
                                     >
                                         <FiLogOut size={20} />

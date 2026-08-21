@@ -139,7 +139,7 @@ export default function ProductPage(){
             </div>
 
             {/* Creative Glassmorphic Category Bar (Sticky) */}
-            <div className="sticky top-[72px] md:top-[80px] z-40 bg-white/80 dark:bg-[#151520]/80 border-b border-gray-200/80 dark:border-gray-800/80 backdrop-blur-2xl shadow-sm">
+            <div className="sticky top-[72px] md:top-[80px] z-30 bg-white/80 dark:bg-[#151520]/80 border-b border-gray-200/80 dark:border-gray-800/80 backdrop-blur-2xl shadow-sm">
                 <div className="max-w-7xl mx-auto px-4 md:px-12 flex flex-col md:flex-row justify-between items-center py-3.5 gap-4">
                     
                     {/* Categories Tabs */}
@@ -169,8 +169,8 @@ export default function ProductPage(){
                         })}
                     </div>
 
-                    {/* Search Bar */}
-                    <div className="relative w-full md:w-72 shrink-0">
+                    {/* Search Bar (Hidden on Mobile) */}
+                    <div className="relative w-full md:w-72 shrink-0 hidden md:block">
                         <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" size={16} />
                         <input 
                             type="text" 
