@@ -1,16 +1,34 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
-import { FiPackage, FiLogOut, FiUser, FiShield, FiMapPin, FiCreditCard, FiHeart, FiGift, FiBell, FiSettings, FiUploadCloud, FiSave, FiEdit2, FiPlus, FiTrash2, FiStar } from "react-icons/fi";
+import { FiPackage, FiLogOut, FiUser, FiShield, FiMapPin, FiCreditCard, FiHeart, FiGift, FiBell, FiSettings, FiUploadCloud, FiSave, FiEdit2, FiPlus, FiTrash2, FiStar, FiShoppingBag, FiAward, FiCheckCircle } from "react-icons/fi";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 import uploadMediaToSupabase from "../../utils/mediaUpload";
+import { loadWishlist, removeFromWishlist } from "../../utils/wishlistFunction";
+import { addToCart } from "../../utils/cartFunction";
 
 export default function Profile() {
     const navigate = useNavigate();
     const [orders, setOrders] = useState([]);
     const [userProfile, setUserProfile] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [wishlistItems, setWishlistItems] = useState([]);
+
+    useEffect(() => {
+        const refreshWishlist = () => {
+            setWishlistItems(loadWishlist());
+        };
+        refreshWishlist();
+        window.addEventListener("aura_wishlist_updated", refreshWishlist);
+        return () => window.removeEventListener("aura_wishlist_updated", refreshWishlist);
+    }, []);
+
+    const calculatedPoints = userProfile?.points ?? Math.floor(
+        orders
+            .filter(o => String(o.status || "").toLowerCase() !== "cancelled")
+            .reduce((sum, o) => sum + (o.total || 0), 0) / 100
+    );
 
     // Edit Profile State
     const [editFName, setEditFName] = useState("");
@@ -310,21 +328,21 @@ export default function Profile() {
                                             <div className="w-12 h-12 rounded-full bg-orange-100 dark:bg-amber-900/40 flex items-center justify-center mx-auto mb-4">
                                                 <FiGift size={22} className="text-orange-500 dark:text-amber-400" />
                                             </div>
-                                            <p className="text-3xl font-serif text-orange-600 dark:text-amber-400 mb-1">450</p>
+                                            <p className="text-3xl font-serif text-orange-600 dark:text-amber-400 mb-1">{calculatedPoints.toLocaleString()}</p>
                                             <p className="text-xs font-bold uppercase tracking-widest text-orange-400 dark:text-amber-500">Points</p>
                                         </div>
                                         <div className="bg-gradient-to-br from-white to-pink-50 dark:from-gray-800 dark:to-pink-950/30 p-6 rounded-2xl shadow-sm border border-pink-100 dark:border-pink-900/40 text-center cursor-pointer hover:shadow-md hover:-translate-y-1 transition-all duration-300" onClick={() => setActiveTab('wishlist')}>
                                             <div className="w-12 h-12 rounded-full bg-pink-100 dark:bg-pink-900/40 flex items-center justify-center mx-auto mb-4">
                                                 <FiHeart size={22} className="text-pink-500 dark:text-pink-400" />
                                             </div>
-                                            <p className="text-3xl font-serif text-pink-600 dark:text-pink-400 mb-1">12</p>
+                                            <p className="text-3xl font-serif text-pink-600 dark:text-pink-400 mb-1">{wishlistItems.length}</p>
                                             <p className="text-xs font-bold uppercase tracking-widest text-pink-400 dark:text-pink-500">Saved</p>
                                         </div>
                                         <div className="bg-gradient-to-br from-white to-blue-50 dark:from-gray-800 dark:to-blue-950/30 p-6 rounded-2xl shadow-sm border border-blue-100 dark:border-blue-900/40 text-center cursor-pointer hover:shadow-md hover:-translate-y-1 transition-all duration-300" onClick={() => setActiveTab('addresses')}>
                                             <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center mx-auto mb-4">
                                                 <FiMapPin size={22} className="text-blue-500 dark:text-blue-400" />
                                             </div>
-                                            <p className="text-3xl font-serif text-blue-600 dark:text-blue-400 mb-1">2</p>
+                                            <p className="text-3xl font-serif text-blue-600 dark:text-blue-400 mb-1">{(userProfile?.addresses || []).length}</p>
                                             <p className="text-xs font-bold uppercase tracking-widest text-blue-400 dark:text-blue-500">Addresses</p>
                                         </div>
                                     </div>
@@ -694,8 +712,148 @@ export default function Profile() {
                             </motion.div>
                         )}
 
+                        {/* WISHLIST TAB */}
+                        {activeTab === "wishlist" && (
+                            <motion.div 
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="bg-white/80 dark:bg-[#181820]/90 backdrop-blur-xl rounded-3xl p-8 md:p-10 shadow-xl border border-white dark:border-gray-800"
+                            >
+                                <div className="flex items-center gap-4 mb-8">
+                                    <div className="w-12 h-12 bg-pink-500 text-white rounded-full flex items-center justify-center text-xl shadow-lg">
+                                        <FiHeart />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-serif text-3xl text-primary-dark dark:text-white">Saved Wishlist</h3>
+                                        <p className="text-gray-500 dark:text-gray-400">{wishlistItems.length} items saved for later.</p>
+                                    </div>
+                                </div>
+
+                                {wishlistItems.length === 0 ? (
+                                    <div className="text-center py-16 bg-gray-50 dark:bg-gray-800/40 rounded-2xl border border-dashed border-gray-200 dark:border-gray-700">
+                                        <div className="w-16 h-16 bg-pink-100 dark:bg-pink-900/40 text-pink-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
+                                            <FiHeart size={28} />
+                                        </div>
+                                        <h4 className="font-serif text-xl font-bold text-primary-dark dark:text-white mb-2">Your wishlist is empty</h4>
+                                        <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 max-w-sm mx-auto">Explore our products and tap the heart icon to save your favorite beauty items!</p>
+                                        <Link to="/product" className="inline-block px-6 py-3 bg-primary-dark dark:bg-accent text-white rounded-full text-xs font-bold uppercase tracking-widest hover:bg-black dark:hover:bg-accent/80 transition-colors shadow-md">
+                                            Explore Products
+                                        </Link>
+                                    </div>
+                                ) : (
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                                        {wishlistItems.map((item, idx) => {
+                                            const prodId = typeof item === 'object' ? (item.productId || item._id || item.id) : item;
+                                            const name = item.name || item.title || "Luxury Beauty Product";
+                                            const price = Number(item.price || 0);
+                                            const image = item.image || item.productImage || "https://images.unsplash.com/photo-1616683693504-3ea7e9ad6fec?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80";
+
+                                            return (
+                                                <div key={idx} className="bg-white dark:bg-gray-800/60 rounded-2xl p-4 border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+                                                    <div>
+                                                        <div className="relative w-full h-44 rounded-xl overflow-hidden mb-4 bg-gray-100 dark:bg-gray-700">
+                                                            <img src={image} alt={name} className="w-full h-full object-cover" />
+                                                            <button 
+                                                                onClick={() => {
+                                                                    removeFromWishlist(prodId);
+                                                                    toast.success("Item removed from Wishlist");
+                                                                }}
+                                                                className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/80 dark:bg-gray-900/80 backdrop-blur-md text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-colors cursor-pointer"
+                                                                title="Remove from Wishlist"
+                                                            >
+                                                                <FiTrash2 size={16} />
+                                                            </button>
+                                                        </div>
+                                                        <h4 className="font-bold text-sm text-primary-dark dark:text-white line-clamp-1 mb-1">{name}</h4>
+                                                        <p className="font-serif font-bold text-accent text-sm mb-4">LKR {price > 0 ? price.toLocaleString() : 'N/A'}</p>
+                                                    </div>
+                                                    <div className="flex gap-2 pt-2 border-t border-gray-100 dark:border-gray-800">
+                                                        <button 
+                                                            onClick={() => {
+                                                                addToCart(prodId, 1);
+                                                                removeFromWishlist(prodId);
+                                                                toast.success("✨ Item moved from Wishlist to Cart!");
+                                                            }}
+                                                            className="flex-1 py-2.5 bg-primary-dark dark:bg-accent text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 hover:bg-black dark:hover:bg-accent/80 transition-colors shadow-sm cursor-pointer"
+                                                        >
+                                                            <FiShoppingBag size={14} /> Add to Cart
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                            </motion.div>
+                        )}
+
+                        {/* REWARDS TAB */}
+                        {activeTab === "rewards" && (
+                            <motion.div 
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="bg-white/80 dark:bg-[#181820]/90 backdrop-blur-xl rounded-3xl p-8 md:p-10 shadow-xl border border-white dark:border-gray-800"
+                            >
+                                <div className="flex items-center gap-4 mb-8">
+                                    <div className="w-12 h-12 bg-amber-500 text-white rounded-full flex items-center justify-center text-xl shadow-lg">
+                                        <FiGift />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-serif text-3xl text-primary-dark dark:text-white">Aura Rewards & Wallet</h3>
+                                        <p className="text-gray-500 dark:text-gray-400">Earn points on every order and redeem exclusive beauty perks.</p>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                                    <div className="bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden">
+                                        <div className="absolute -right-4 -bottom-4 w-28 h-28 bg-white/10 rounded-full blur-xl"></div>
+                                        <p className="text-xs uppercase font-bold tracking-widest text-amber-100 mb-2">Available Points</p>
+                                        <h4 className="font-serif text-4xl font-bold mb-4">{calculatedPoints.toLocaleString()} <span className="text-lg font-normal">pts</span></h4>
+                                        <p className="text-xs text-amber-100">Worth LKR {(calculatedPoints * 1).toLocaleString()} in checkout discounts</p>
+                                    </div>
+
+                                    <div className="bg-white dark:bg-gray-800/60 rounded-2xl p-6 border border-gray-100 dark:border-gray-800 shadow-sm">
+                                        <p className="text-xs uppercase font-bold tracking-widest text-gray-400 mb-2">Membership Tier</p>
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <FiAward className="text-amber-500" size={24} />
+                                            <h4 className="font-serif text-2xl font-bold text-primary-dark dark:text-white">
+                                                {calculatedPoints >= 1500 ? "VIP Gold" : calculatedPoints >= 500 ? "Silver Aura" : "Bronze Member"}
+                                            </h4>
+                                        </div>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                                            {calculatedPoints >= 1500 ? "Enjoy free express shipping & double points!" : calculatedPoints >= 500 ? "Earn 500 more points for VIP tier." : "Earn 500 points to unlock Silver status."}
+                                        </p>
+                                    </div>
+
+                                    <div className="bg-white dark:bg-gray-800/60 rounded-2xl p-6 border border-gray-100 dark:border-gray-800 shadow-sm">
+                                        <p className="text-xs uppercase font-bold tracking-widest text-gray-400 mb-2">Order Earn Rate</p>
+                                        <h4 className="font-serif text-2xl font-bold text-accent mb-2">1 Point / LKR 100</h4>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">Automatically credited on completed orders.</p>
+                                    </div>
+                                </div>
+
+                                <div className="bg-gray-50 dark:bg-gray-800/40 rounded-2xl p-6 border border-gray-100 dark:border-gray-800">
+                                    <h4 className="font-serif text-lg font-bold text-primary-dark dark:text-white mb-4">How to Earn & Redeem</h4>
+                                    <div className="space-y-3">
+                                        <div className="flex items-start gap-3">
+                                            <FiCheckCircle className="text-emerald-500 shrink-0 mt-1" size={18} />
+                                            <p className="text-sm text-gray-600 dark:text-gray-300">Shop online and automatically earn 1 point for every LKR 100 spent.</p>
+                                        </div>
+                                        <div className="flex items-start gap-3">
+                                            <FiCheckCircle className="text-emerald-500 shrink-0 mt-1" size={18} />
+                                            <p className="text-sm text-gray-600 dark:text-gray-300">Use your accumulated points during checkout for instant discounts on your favorite products.</p>
+                                        </div>
+                                        <div className="flex items-start gap-3">
+                                            <FiCheckCircle className="text-emerald-500 shrink-0 mt-1" size={18} />
+                                            <p className="text-sm text-gray-600 dark:text-gray-300">Points never expire as long as your account remains active.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        )}
+
                         {/* OTHER TABS PLACEHOLDERS */}
-                        {["payments", "wishlist", "rewards", "preferences"].includes(activeTab) && (
+                        {["payments", "preferences"].includes(activeTab) && (
                             <motion.div 
                                 initial={{ opacity: 0, scale: 0.95 }}
                                 animate={{ opacity: 1, scale: 1 }}
